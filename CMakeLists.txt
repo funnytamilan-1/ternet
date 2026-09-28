@@ -19,7 +19,7 @@ target_include_directories(tnc PRIVATE Include compiler)
 if(MSVC)
     target_compile_options(tnc PRIVATE /W4)
 else()
-    target_compile_options(tnc PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(tnc PRIVATE -Wall -Wextra -Wpedantic -Wno-free-nonheap-object)
 endif()
 
 enable_testing()
