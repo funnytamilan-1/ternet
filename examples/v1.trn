@@ -1,0 +1,10 @@
+let name = "Ajmal":
+mut count = 0:
+while {count < 3}; {
+    tnprint("Hello", name, count):
+    count = count + 1:
+}
+if {count == 3};
+    tnprint("done"):
+else {};
+    tnprint("not done"):
