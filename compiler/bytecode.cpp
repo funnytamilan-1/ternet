@@ -81,7 +81,7 @@ struct Compiler {
         case Expr::Call: {
             if (!e->left || e->left->kind != Expr::Variable)
                 throw CompileError("T3014: call target must be a function");
-            const auto st = struct_ids.find(e->left->name);\n            if (st != struct_ids.end()) {\n                const auto& fields = struct_fields[e->left->name];\n                if (fields.size() != e->args.size()) throw CompileError("T3015: wrong field count for struct");\n                for (const auto& a : e->args) expr(a);\n                emit(Op::MakeObject, st->second);\n                return;\n            }\n            const auto it = function_ids.find(e->left->name);
+            const auto st = struct_ids.find(e->left->name);\n            if (st != struct_ids.end()) {\n                const auto& fields = struct_fields[e->left->name];\n                if (fields.size() != e->args.size()) throw CompileError("T3015: wrong field count for struct");\n                for (std::size_t i = 0; i < e->args.size(); ++i) { emit(Op::Const, constant(Value(fields[i]))); expr(e->args[i]); }\n                emit(Op::MakeObject, static_cast<int>(fields.size()));\n                return;\n            }\n            const auto it = function_ids.find(e->left->name);
             if (it == function_ids.end())
                 throw CompileError("T2001: undefined function '" + e->left->name + "'");
             const auto& fn = c.functions[static_cast<std::size_t>(it->second)];
