@@ -1,3 +1,13 @@
-// Representative Ternet sample for future GitHub Linguist submission.
-let name = "Ternet":
-tnprint("Hello Ternet"):
+// Ternet GitHub Linguist representative sample
+let name = "Ajmal":
+mut count = 3:
+
+fn greet(value) {
+    return "Hello ${value}":
+}
+
+if {count > 0}; {
+    tnprint(greet(name)):
+} else {
+    tnprint("Nothing to print"):
+}
