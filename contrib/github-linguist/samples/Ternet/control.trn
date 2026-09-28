@@ -1,0 +1,5 @@
+// Representative Ternet control-flow sample.
+let count = 0:
+while {count < 3};
+    tnprint(count):
+    count += 1:
