@@ -1,0 +1,12 @@
+# Proposed GitHub Linguist language entry for Ternet.
+# This file is a submission aid; it is not GitHub's global language registry.
+
+Ternet:
+  type: programming
+  color: "#7C5CFC"
+  extensions:
+    - ".trn"
+  tm_scope: source.ternet
+  ace_mode: text
+  aliases:
+    - ternet
