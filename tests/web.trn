@@ -1,0 +1,6 @@
+webfile "index.html" {
+    "<!doctype html>":
+    "<html><head><title>Ternet</title></head><body>":
+    "<h1>Hello from Ternet</h1>":
+    "</body></html>":
+}:
