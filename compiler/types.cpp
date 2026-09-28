@@ -153,6 +153,26 @@ struct Checker {
                 structs[s->name] = s->fields.size();
                 break;
 
+            case Stmt::Enum:
+                if (scopes.back().count(s->name))
+                    throw CheckError("T2002: duplicate binding '" + s->name + "'");
+                scopes.back()[s->name] = {Kind::Unknown};
+                break;
+
+            case Stmt::Match: {
+                expr(s->match_expr);
+                for (auto& branch : s->match_cases) {
+                    expr(branch.first);
+                    scopes.push_back({});
+                    body(branch.second, in_function);
+                    scopes.pop_back();
+                }
+                scopes.push_back({});
+                body(s->match_default, in_function);
+                scopes.pop_back();
+                break;
+            }
+
             case Stmt::Let: {
                 auto t = expr(s->expr);
                 if (!s->type_name.empty()) {
