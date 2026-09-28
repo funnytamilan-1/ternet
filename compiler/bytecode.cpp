@@ -85,6 +85,54 @@ struct Compiler {
             if (!e->left || e->left->kind != Expr::Variable)
                 throw CompileError("T3014: call target must be a function");
 
+            const auto builtin = e->left->name;
+            auto emit_tagged = [&](const std::string& tag, bool has_value) {
+                emit(Op::Const, constant(Value("tag")));
+                emit(Op::Const, constant(Value(tag)));
+                if (has_value) {
+                    emit(Op::Const, constant(Value("value")));
+                    expr(e->args[0]);
+                    emit(Op::MakeObject, 2);
+                } else {
+                    emit(Op::MakeObject, 1);
+                }
+            };
+            if (builtin == "some" || builtin == "ok" || builtin == "err") {
+                if (e->args.size() != 1) throw CompileError("T3034: " + builtin + "() expects one value");
+                emit_tagged(builtin, true);
+                return;
+            }
+            if (builtin == "none") {
+                if (!e->args.empty()) throw CompileError("T3034: none() expects no arguments");
+                emit_tagged("none", false);
+                return;
+            }
+            if (builtin == "is_some" || builtin == "is_none") {
+                if (e->args.size() != 1) throw CompileError("T3036: " + builtin + "() expects one value");
+                expr(e->args[0]);
+                emit(Op::GetMember, name("tag"));
+                emit(Op::Const, constant(Value(builtin == "is_some" ? "some" : "none")));
+                emit(Op::Eq);
+                return;
+            }
+            if (builtin == "unwrap_or") {
+                if (e->args.size() != 2) throw CompileError("T3037: unwrap_or() expects two arguments");
+                expr(e->args[0]);
+                emit(Op::GetMember, name("tag"));
+                emit(Op::Const, constant(Value("some")));
+                emit(Op::Eq);
+                const auto jf = emit(Op::JumpIfFalse);
+                expr(e->args[0]);
+                emit(Op::GetMember, name("value"));
+                const auto jend = emit(Op::Jump);
+                const auto fallback = c.code.size();
+                expr(e->args[1]);
+                const auto end = c.code.size();
+                patch(jf, fallback);
+                patch(jend, end);
+                return;
+            }
+
             const auto st = struct_fields.find(e->left->name);
             if (st != struct_fields.end()) {
                 if (st->second.size() != e->args.size())
