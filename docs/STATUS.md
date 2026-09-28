@@ -5,37 +5,38 @@ This file prevents the project from confusing specification with implementation.
 ## Implemented today
 
 - C++17 + CMake build
-- .trn validation
-- lexer with line/column information
+- `.trn` lexer with line/column information
+- line comments and block comments (`/* ... */`)
 - escaped strings
-- tnprint("text")::
-- multiple print statements
-- print bytecode
-- TVM execution
-- basic invalid-source handling
-- examples and tests for the baseline
+- integers, floats, booleans and null literals
+- `let`, `mut`, `const` bindings
+- arithmetic, comparison and logical expressions
+- arrays and indexing
+- `tnprint(...)` with multiple arguments
+- `if / elif / else`
+- `while`, `break`, `continue`
+- named functions, arguments and `return`
+- `throw` / `try` / `catch` / `finally`
+- `webfile` output to the protected `dist/` directory
+- `tnc run`, `check`, `version`, `init`, `add`, `install`, `list`, `remove`, `package`
+- reference interpreter/TVM-style runtime
+- CTest regression coverage for core, loops, errors, web output and block comments
 
 ## Specified but not implemented
 
-- V1 single-colon statement syntax
-- let/mut/const/comptime
-- expressions/operators
-- if {condition}; / elif / else {};
-- loops
-- functions
-- arrays/maps
-- structs/enums/classes
-- traits
-- generics
+- static type checker and type inference
+- structs/enums/classes/traits/generics
 - ownership/borrowing
 - Option/Result
-- async/await
-- modules/imports
-- package manager
-- standard library modules
-- formatter/linter/test runner/REPL
-- bytecode verification
+- async/await scheduler
+- module/import resolution
+- production standard library modules
+- real bytecode compiler and bytecode verifier
 - native backend
+- remote package registry, signatures and integrity verification
+- formatter/linter/LSP/debugger/profiler
+- OCI/container runtime enforcement
+- capability enforcement and sandboxed OS access
 
 ## Compatibility note
 
