@@ -1,0 +1,9 @@
+let x = 10:
+mut y = 2:
+fn add(a, b) {
+    return a + b:
+}:
+if {x > y};
+    tnprint(add(x, y)):
+else {};
+    tnprint("bad"):
