@@ -12,6 +12,7 @@ add_executable(tnc
     Tools/package.cpp
     Modules/telegram.cpp
     compiler/bytecode.cpp
+    compiler/types.cpp
 )
 target_include_directories(tnc PRIVATE Include compiler)
 
