@@ -21,6 +21,7 @@ namespace {
 struct Checker {
     std::vector<std::unordered_map<std::string, Type>> scopes;
     std::unordered_map<std::string, std::vector<Type>> functions;
+    std::unordered_map<std::string, std::size_t> structs;
 
     Type find(const std::string& n) {
         for (auto it = scopes.rbegin(); it != scopes.rend(); ++it) {
@@ -101,6 +102,12 @@ struct Checker {
             throw CheckError("T3002: unknown operator '" + e->op + "'");
         }
 
+        case Expr::Member: {
+            const auto o = expr(e->object);
+            if (o.kind == Kind::Unknown) return {Kind::Unknown};
+            return {Kind::Unknown};
+        }
+
         case Expr::Index: {
             const auto a = expr(e->left);
             const auto i = expr(e->index);
@@ -114,6 +121,8 @@ struct Checker {
         case Expr::Call: {
             if (!e->left || e->left->kind != Expr::Variable)
                 throw CheckError("T3014: call target must be a function");
+
+            if (structs.count(e->left->name)) { for (auto& a : e->args) expr(a); return {Kind::Unknown}; }
 
             if (e->left->name == "web_write") {
                 for (auto& a : e->args) expr(a);
@@ -140,6 +149,10 @@ struct Checker {
             if (!s) throw CheckError("T1003: null statement");
 
             switch (s->kind) {
+            case Stmt::Struct:
+                structs[s->name] = s->fields.size();
+                break;
+
             case Stmt::Let: {
                 auto t = expr(s->expr);
                 if (!s->type_name.empty()) {
@@ -273,6 +286,7 @@ struct Checker {
         scopes.push_back({});
 
         for (const auto& s : p.statements) {
+            if (s->kind == Stmt::Struct) { structs[s->name] = s->fields.size(); }
             if (s->kind == Stmt::Function) {
                 if (functions.count(s->name))
                     throw CheckError("T2003: duplicate function '" + s->name + "'");
