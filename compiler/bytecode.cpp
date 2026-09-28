@@ -621,6 +621,44 @@ Value execute(const Chunk& c) {
             break;
         }
 
+        case Op::MakeObject: {
+            const auto count = static_cast<std::size_t>(ins.operand);
+            if (stack.size() < count * 2)
+                throw CompileError("T6012: bytecode stack underflow");
+            Value::Object object;
+            for (std::size_t i = 0; i < count; ++i) {
+                auto value = pop();
+                auto key = pop();
+                if (!std::holds_alternative<std::string>(key.data))
+                    throw CompileError("T3018: object field name must be string");
+                object[std::get<std::string>(key.data)] = std::move(value);
+            }
+            stack.emplace_back(std::move(object));
+            break;
+        }
+
+        case Op::GetMember: {
+            const auto object = pop();
+            const auto& key = c.names[static_cast<std::size_t>(ins.operand)];
+            const auto o = std::get_if<Value::Object>(&object.data);
+            if (!o) throw CompileError("T3019: member access requires object");
+            const auto it = o->find(key);
+            if (it == o->end()) throw CompileError("T3020: unknown object member");
+            stack.push_back(it->second);
+            break;
+        }
+
+        case Op::SetMember: {
+            auto value = pop();
+            auto object = pop();
+            const auto& key = c.names[static_cast<std::size_t>(ins.operand)];
+            auto o = std::get_if<Value::Object>(&object.data);
+            if (!o) throw CompileError("T3021: member assignment requires object");
+            (*o)[key] = std::move(value);
+            stack.push_back(std::move(object));
+            break;
+        }
+
         case Op::Neg: {
             auto v = pop();
             if (auto p = std::get_if<std::int64_t>(&v.data))
