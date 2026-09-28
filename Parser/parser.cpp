@@ -32,11 +32,11 @@ if(is(TokenType::Keyword,"while")){s->kind=Stmt::While;++i;need(TokenType::LBrac
 if(is(TokenType::Keyword,"for")){s->kind=Stmt::For;++i;if(!is(TokenType::Identifier))throw RuntimeError("expected loop variable");s->name=c().text;++i;need(TokenType::Keyword,"expected 'in'");if(t[i-1].text!="in")throw RuntimeError("expected 'in'");s->for_start=expr();if(eat(TokenType::Op,"..")){s->for_end=expr();s->for_inclusive=true;}else throw RuntimeError("for requires range '..'");s->body=braced();return s;}
 if(is(TokenType::Keyword,"enum")){
 ++i; if(!is(TokenType::Identifier))throw RuntimeError("expected enum name");
-s->kind=Stmt::Enum; s->name=c().text; ++i; need(TokenType::LBrace,"expected '{' after enum name');
+s->kind=Stmt::Enum; s->name=c().text; ++i; need(TokenType::LBrace,"expected '{' after enum name");
 while(!is(TokenType::RBrace)&&!is(TokenType::End)){ if(!is(TokenType::Identifier))throw RuntimeError("expected enum value"); s->enum_values.push_back(c().text); ++i; if(!eat(TokenType::Comma)) eat(TokenType::Colon); }
 need(TokenType::RBrace,"expected '}' after enum"); eat(TokenType::Colon); return s;}
 if(is(TokenType::Keyword,"match")){
-++i; s->kind=Stmt::Match; s->match_expr=expr(); need(TokenType::LBrace,"expected '{' after match expression');
+++i; s->kind=Stmt::Match; s->match_expr=expr(); need(TokenType::LBrace,"expected '{' after match expression");
 while(!is(TokenType::RBrace)&&!is(TokenType::End)){
   if(is(TokenType::Identifier,"_")){ ++i; need(TokenType::Op,"expected '=>'"); if(t[i-1].text!="=>")throw RuntimeError("expected '=>'"); s->match_default=after_header(); }
   else { auto pattern=expr(); need(TokenType::Op,"expected '=>'"); if(t[i-1].text!="=>")throw RuntimeError("expected '=>'"); s->match_cases.push_back({pattern,after_header()}); }
