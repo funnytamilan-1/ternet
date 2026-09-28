@@ -11,13 +11,12 @@ namespace {
 struct LoopContext {
     std::size_t continue_target = 0;
     std::vector<std::size_t> breaks;
-    std::vector<std::size_t> continues;
 };
 
 struct Compiler {
     Chunk c;
     std::vector<LoopContext> loops;
-    std::unordered_map<std::string, int> function_ids;\n    std::unordered_map<std::string, int> struct_ids;\n    std::unordered_map<std::string, std::vector<std::string>> struct_fields;
+    std::unordered_map<std::string, int> function_ids;
     bool in_function = false;
 
     int constant(Value v) {
@@ -66,11 +65,6 @@ struct Compiler {
             emit(Op::Index);
             return;
 
-        case Expr::Member:
-            expr(e->object);
-            emit(Op::GetMember, name(e->name));
-            return;
-
         case Expr::Unary:
             expr(e->right);
             if (e->op == "-") emit(Op::Neg);
@@ -81,7 +75,7 @@ struct Compiler {
         case Expr::Call: {
             if (!e->left || e->left->kind != Expr::Variable)
                 throw CompileError("T3014: call target must be a function");
-            const auto st = struct_ids.find(e->left->name);\n            if (st != struct_ids.end()) {\n                const auto& fields = struct_fields[e->left->name];\n                if (fields.size() != e->args.size()) throw CompileError("T3015: wrong field count for struct");\n                for (std::size_t i = 0; i < e->args.size(); ++i) { emit(Op::Const, constant(Value(fields[i]))); expr(e->args[i]); }\n                emit(Op::MakeObject, static_cast<int>(fields.size()));\n                return;\n            }\n            const auto it = function_ids.find(e->left->name);
+            const auto it = function_ids.find(e->left->name);
             if (it == function_ids.end())
                 throw CompileError("T2001: undefined function '" + e->left->name + "'");
             const auto& fn = c.functions[static_cast<std::size_t>(it->second)];
@@ -148,14 +142,8 @@ struct Compiler {
             return;
 
         case Stmt::Assign:
-            if (s->target && s->target->kind == Expr::Member) {
-                expr(s->target->object);
-                expr(s->expr);
-                emit(Op::SetMember, name(s->target->name));
-            } else {
-                expr(s->expr);
-                emit(Op::Store, name(s->name));
-            }
+            expr(s->expr);
+            emit(Op::Store, name(s->name));
             return;
 
         case Stmt::Print:
@@ -198,33 +186,15 @@ struct Compiler {
             expr(s->expr);
             const auto jf = emit(Op::JumpIfFalse);
 
-            loops.push_back({start, {}, {}});
+            loops.push_back({start, {}});
             statements(s->body);
             emit(Op::Jump, static_cast<int>(start));
 
             const auto end = c.code.size();
             patch(jf, end);
             for (const auto br : loops.back().breaks) patch(br, end);
-            for (const auto co : loops.back().continues) patch(co, loops.back().continue_target);
             loops.pop_back();
             return;
-        }
-
-        case Stmt::For: {
-            expr(s->for_start); emit(Op::Store,name(s->name));
-            const int hidden=name("__ternet_for_end_"+std::to_string(c.code.size()));
-            expr(s->for_end); emit(Op::Store,hidden);
-            const auto start=c.code.size();
-            emit(Op::Load,name(s->name)); emit(Op::Load,hidden); emit(Op::Le);
-            const auto jf=emit(Op::JumpIfFalse); loops.push_back({0,{},{}});
-            statements(s->body);
-            const auto continue_target=c.code.size(); loops.back().continue_target=continue_target;
-            emit(Op::Load,name(s->name)); emit(Op::Const,constant(Value((std::int64_t)1))); emit(Op::Add); emit(Op::Store,name(s->name));
-            emit(Op::Jump,static_cast<int>(start));
-            const auto end=c.code.size(); patch(jf,end);
-            for(const auto br:loops.back().breaks) patch(br,end);
-            for(const auto co:loops.back().continues) patch(co,continue_target);
-            loops.pop_back(); return;
         }
 
         case Stmt::Break:
@@ -236,10 +206,11 @@ struct Compiler {
         case Stmt::Continue:
             if (loops.empty())
                 throw CompileError("T2102: continue outside loop");
-            loops.back().continues.push_back(emit(Op::Jump));
+            emit(Op::Jump, static_cast<int>(loops.back().continue_target));
             return;
 
-        case Stmt::Struct:\n            return;\n\n        case Stmt::Function:\n            if (in_function)
+        case Stmt::Function:
+            if (in_function)
                 throw CompileError("T2106: nested functions are not supported yet");
             return;
 
@@ -289,7 +260,7 @@ bool equal_value(const Value& a, const Value& b) {
 
 } // namespace
 
-Chunk compile(const Program& program) {\n    Compiler x;\n    for (const auto& st : program.statements) {\n        if (st->kind == Stmt::Struct) {\n            const int id = static_cast<int>(x.struct_ids.size());\n            x.struct_ids[st->name] = id;\n            x.struct_fields[st->name] = st->fields;\n        }\n    }\n    for (const auto& st : program.statements) {\n        if (st->kind == Stmt::Function) {\n            if (x.function_ids.count(st->name)) throw CompileError("T2003: duplicate function");\n            const int id = static_cast<int>(x.c.functions.size());\n            x.function_ids[st->name] = id;\n            x.c.functions.push_back({st->name, st->params, 0});\n        }\n    }\n    for (const auto& st : program.statements) {\n        if (st->kind != Stmt::Function) x.stmt(st);\n    }\n    x.emit(Op::Halt);\n    for (const auto& st : program.statements) {\n        if (st->kind == Stmt::Function) {\n            auto id = x.function_ids.at(st->name);\n            x.c.functions[id].entry = static_cast<int>(x.c.code.size());\n            x.in_function = true;\n            x.statements(st->function_body);\n            x.emit(Op::Const, x.constant(Value{}));\n            x.emit(Op::Return);\n            x.in_function = false;\n        }\n    }\n    verify(x.c);\n    return x.c;\n}\n
+Chunk compile(const Program& program) {
     Compiler x;
 
     for (const auto& s : program.statements) {
@@ -341,18 +312,12 @@ void verify(const Chunk& c) {
             break;
         case Op::Load:
         case Op::Store:
-        case Op::GetMember:
-        case Op::SetMember:
             if (!valid(ins.operand, c.names.size()))
                 throw CompileError("T6003: invalid name index");
             break;
         case Op::MakeArray:
             if (ins.operand < 0)
                 throw CompileError("T6005: invalid array size");
-            break;
-        case Op::MakeObject:
-            if (ins.operand < 0)
-                throw CompileError("T6005: invalid object field count");
             break;
         case Op::Call:
             if (!valid(ins.operand, c.functions.size()))
@@ -624,43 +589,6 @@ Value execute(const Chunk& c) {
             if (*p < 0 || static_cast<std::size_t>(*p) >= a->size())
                 throw CompileError("T3017: array index out of bounds");
             stack.push_back((*a)[static_cast<std::size_t>(*p)]);
-            break;
-        }
-
-        case Op::MakeObject: {
-            const auto count = static_cast<std::size_t>(ins.operand);
-            if (stack.size() < count * 2)
-                throw CompileError("T6012: bytecode stack underflow");
-            Value::Object object;
-            for (std::size_t i = 0; i < count; ++i) {
-                auto value = pop();
-                auto key = pop();
-                if (!std::holds_alternative<std::string>(key.data))
-                    throw CompileError("T3018: object field name must be string");
-                object[std::get<std::string>(key.data)] = std::move(value);
-            }
-            stack.emplace_back(std::move(object));
-            break;
-        }
-
-        case Op::GetMember: {
-            const auto object = pop();
-            const auto& key = c.names[static_cast<std::size_t>(ins.operand)];
-            const auto o = std::get_if<Value::Object>(&object.data);
-            if (!o) throw CompileError("T3019: member access requires object");
-            const auto it = o->find(key);
-            if (it == o->end()) throw CompileError("T3020: unknown object member");
-            stack.push_back(it->second);
-            break;
-        }
-
-        case Op::SetMember: {
-            auto value = pop();
-            auto object = pop();
-            const auto& key = c.names[static_cast<std::size_t>(ins.operand)];
-            auto o = std::get_if<Value::Object>(&object.data);
-            if (!o) throw CompileError("T3021: member assignment requires object");
-            (*o)[key] = std::move(value);
             break;
         }
 
