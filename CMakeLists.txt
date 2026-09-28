@@ -28,6 +28,9 @@ add_test(NAME ternet_loop COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/loop.trn)
 add_test(NAME ternet_errors COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/errors.trn)
 add_test(NAME ternet_block_comments COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/block_comments.trn)
 add_test(NAME ternet_web COMMAND tnc web build ${CMAKE_SOURCE_DIR}/tests/web.trn)
+add_test(NAME ternet_web_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/web.trn -o ${CMAKE_CURRENT_BINARY_DIR}/web.tbc)
+add_test(NAME ternet_web_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/web.tbc)
+set_tests_properties(ternet_web_bytecode_exec PROPERTIES DEPENDS ternet_web_bytecode_build)
 
 add_executable(ternet_telegram_test
     tests/telegram_client.cpp
