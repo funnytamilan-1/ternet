@@ -324,9 +324,6 @@ struct Compiler {
         case Stmt::Try:
             throw CompileError("T2104: exception bytecode lowering is not yet enabled");
 
-        case Stmt::WebFile:
-            throw CompileError("T2105: webfile bytecode lowering is not yet enabled");
-
         default:
             throw CompileError("T2100: statement is not supported by the bytecode compiler");
         }
