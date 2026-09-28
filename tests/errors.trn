@@ -1,0 +1,7 @@
+try {
+    throw "demo error":
+} catch error {
+    tnprint("caught:", error):
+} finally {
+    tnprint("finally"):
+}
