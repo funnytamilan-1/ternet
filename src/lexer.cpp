@@ -4,7 +4,10 @@
 namespace ternet{
 std::vector<Token>lex(const std::string&s){std::vector<Token>t;size_t i=0,l=1,c=1;auto adv=[&]{if(s[i]=='\n'){++l;c=1;}else ++c;++i;};auto add=[&](TokenType k,const std::string&x){t.push_back({k,x,{l,c}});};
 const char*kw="let mut const fn return if elif else while for in break continue true false null import from as struct class trait impl match async await throw try catch finally comptime tnprint webfile";
-while(i<s.size()){char ch=s[i];if(std::isspace((unsigned char)ch)){adv();continue;}if(ch=='/'&&i+1<s.size()&&s[i+1]=='/'){while(i<s.size()&&s[i]!='\n')adv();continue;}size_t L=l,C=c;
+while(i<s.size()){char ch=s[i];if(std::isspace((unsigned char)ch)){adv();continue;}
+if(ch=='/'&&i+1<s.size()&&s[i+1]=='/'){while(i<s.size()&&s[i]!='\n')adv();continue;}
+if(ch=='/'&&i+1<s.size()&&s[i+1]=='*'){size_t L=l,C=c;adv();adv();bool closed=false;while(i<s.size()){if(s[i]=='*'&&i+1<s.size()&&s[i+1]=='/'){adv();adv();closed=true;break;}adv();}if(!closed)throw RuntimeError("unterminated block comment at "+std::to_string(L)+":"+std::to_string(C));continue;}
+size_t L=l,C=c;
 if(std::isalpha((unsigned char)ch)||ch=='_'){std::string x;while(i<s.size()&&(std::isalnum((unsigned char)s[i])||s[i]=='_')){x+=s[i];adv();}bool ok=false;std::istringstream q(kw);std::string w;while(q>>w)if(w==x){ok=true;break;}add(ok?TokenType::Keyword:TokenType::Identifier,x);t.back().pos={L,C};continue;}
 if(std::isdigit((unsigned char)ch)){std::string x;bool dot=false;while(i<s.size()&&(std::isdigit((unsigned char)s[i])||(!dot&&s[i]=='.'))){if(s[i]=='.')dot=true;x+=s[i];adv();}add(TokenType::Number,x);t.back().pos={L,C};continue;}
 if(ch=='"'){adv();std::string x;while(i<s.size()&&s[i]!='"'){if(s[i]=='\\'){adv();if(i>=s.size())break;char e=s[i++];++c;if(e=='n')x+='\n';else if(e=='t')x+='\t';else if(e=='r')x+='\r';else x+=e;}else{x+=s[i];adv();}}if(i>=s.size())throw RuntimeError("unterminated string at "+std::to_string(L)+":"+std::to_string(C));adv();add(TokenType::String,x);t.back().pos={L,C};continue;}
