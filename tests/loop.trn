@@ -1,0 +1,5 @@
+mut i = 0:
+while {i < 3}; {
+    tnprint(i):
+    i = i + 1:
+}
