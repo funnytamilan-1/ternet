@@ -1,3 +1,3 @@
 # Ternet Semantic Analysis
 
-Reserved for semantic analysis and diagnostics. Not yet implemented as a production subsystem.
+Reserved for semantic analysis and diagnostics. This subsystem is not yet implemented as production functionality.
