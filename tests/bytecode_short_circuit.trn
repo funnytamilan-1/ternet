@@ -1,0 +1,2 @@
+tnprint(false && missing):
+tnprint(true || missing):
