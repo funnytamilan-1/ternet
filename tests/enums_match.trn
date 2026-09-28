@@ -1,0 +1,12 @@
+enum Status {
+    IDLE,
+    RUNNING,
+    FAILED
+}
+
+let status = Status.RUNNING:
+match status {
+    Status.IDLE => tnprint("idle"):
+    Status.RUNNING => tnprint("running"):
+    _ => tnprint("other"):
+}
