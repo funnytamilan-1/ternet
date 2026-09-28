@@ -3,7 +3,7 @@
 #include <sstream>
 namespace ternet{
 std::vector<Token>lex(const std::string&s){std::vector<Token>t;size_t i=0,l=1,c=1;auto adv=[&]{if(s[i]=='\n'){++l;c=1;}else ++c;++i;};auto add=[&](TokenType k,const std::string&x){t.push_back({k,x,{l,c}});};
-const char*kw="let mut const fn return if elif else while for in break continue true false null import from as struct class trait impl match async await throw try catch finally comptime tnprint webfile";
+const char*kw="let mut const fn lit return if elif else while for in break continue true false null import from as struct class trait impl match async await throw try catch finally comptime tnprint webfile";
 while(i<s.size()){char ch=s[i];if(std::isspace((unsigned char)ch)){adv();continue;}
 if(ch=='/'&&i+1<s.size()&&s[i+1]=='/' ){while(i<s.size()&&s[i]!='\n')adv();continue;}
 if(ch=='/'&&i+1<s.size()&&s[i+1]=='*'){size_t L=l,C=c;adv();adv();bool closed=false;while(i<s.size()){if(s[i]=='*'&&i+1<s.size()&&s[i+1]=='/'){adv();adv();closed=true;break;}adv();}if(!closed)throw RuntimeError("unterminated block comment at "+std::to_string(L)+":"+std::to_string(C));continue;}
