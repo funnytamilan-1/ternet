@@ -19,6 +19,7 @@ struct Compiler {
     std::vector<LoopContext> loops;
     std::unordered_map<std::string, int> function_ids;
     std::unordered_map<std::string, std::vector<std::string>> struct_fields;
+    std::unordered_map<std::string, std::vector<std::string>> enum_values;
     bool in_function = false;
 
     int constant(Value v) {
@@ -156,6 +157,16 @@ struct Compiler {
         if (!s) throw CompileError("T2000: null statement");
 
         switch (s->kind) {
+        case Stmt::Enum: {
+            for (const auto& value : s->enum_values) {
+                emit(Op::Const, constant(Value(value)));
+                emit(Op::Const, constant(Value(s->name + "." + value)));
+            }
+            emit(Op::MakeObject, static_cast<int>(s->enum_values.size()));
+            emit(Op::Store, name(s->name));
+            return;
+        }
+
         case Stmt::Let:
             expr(s->expr);
             emit(Op::Store, name(s->name));
@@ -193,6 +204,27 @@ struct Compiler {
             else emit(Op::Const, constant(Value{}));
             emit(Op::Return);
             return;
+
+        case Stmt::Match: {
+            expr(s->match_expr);
+            std::vector<std::size_t> exits;
+            std::vector<std::size_t> failed;
+            for (const auto& branch : s->match_cases) {
+                emit(Op::Dup);
+                expr(branch.first);
+                emit(Op::Eq);
+                const auto jf = emit(Op::JumpIfFalse);
+                statements(branch.second);
+                emit(Op::Pop);
+                const auto jend = emit(Op::Jump);
+                exits.push_back(jend);
+                patch(jf, c.code.size());
+            }
+            emit(Op::Pop);
+            statements(s->match_default);
+            for (const auto j : exits) patch(j, c.code.size());
+            return;
+        }
 
         case Stmt::If: {
             std::vector<std::size_t> exits;
@@ -329,6 +361,8 @@ Chunk compile(const Program& program) {
     for (const auto& s : program.statements) {
         if (s && s->kind == Stmt::Struct)
             x.struct_fields[s->name] = s->fields;
+        if (s && s->kind == Stmt::Enum)
+            x.enum_values[s->name] = s->enum_values;
     }
 
     for (const auto& s : program.statements) {
