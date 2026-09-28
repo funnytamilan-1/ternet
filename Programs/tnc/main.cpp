@@ -1,5 +1,6 @@
 #include "ternet.hpp"
 #include "bytecode.hpp"
+#include "types.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
         if (c == "check" && argc == 3) {
             std::ifstream f(argv[2]); if (!f) throw ternet::RuntimeError("cannot open '" + std::string(argv[2]) + "'");
             std::stringstream b; b << f.rdbuf();
-            try { ternet::parse(ternet::lex(b.str())); std::cout << "check: ok\n"; return 0; }
+            try { auto program = ternet::parse(ternet::lex(b.str())); ternet::types::check(program); std::cout << "check: ok\n"; return 0; }
             catch (const std::exception& e) { std::cerr << "Ternet syntax/semantic error E1000: " << e.what() << "\n"; return 1; }
         }
         if (c == "init") return ternet::command_init(argc > 2 ? argv[2] : ".");
