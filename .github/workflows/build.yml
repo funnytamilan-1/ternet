@@ -1,22 +1,64 @@
-name: build
+name: Ternet Build
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: Build ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: tnc-linux-x64
+          - os: windows-latest
+            artifact: tnc-windows-x64
+          - os: macos-latest
+            artifact: tnc-macos-arm64
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Configure
-        run: cmake -S . -B build
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build --config Release --parallel
 
-      - name: Run hello example
-        run: ./build/tnc examples/hello.trn
+      - name: Test
+        working-directory: build
+        run: ctest --output-on-failure -C Release
+
+      - name: Package Unix
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp build/tnc dist/tnc
+          chmod +x dist/tnc
+          tar -czf "${{ matrix.artifact }}.tar.gz" -C dist tnc
+
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item build/Release/tnc.exe dist/tnc.exe
+          Compress-Archive -Path dist/tnc.exe -DestinationPath "${{ matrix.artifact }}.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            *.tar.gz
+            *.zip
