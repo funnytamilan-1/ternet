@@ -1,4 +1,6 @@
-# Ternet Language Specification
+# Implemented Ternet Language Baseline
+
+This document describes **only what the current compiler actually accepts**.
 
 ## Source files
 
@@ -6,22 +8,18 @@ Ternet source files use the `.trn` extension.
 
 ## Statement terminator
 
-Every executable statement ends with `::`.
+The current baseline uses `::`.
 
 ## Output
 
 ```trn
-tnprint("Hello")::
+tnprint("Hello"):: 
 tnprint("Line 2")::
 ```
 
 ## Strings
 
-Strings use double quotes. The lexer currently supports:
-- `\\n`
-- `\\t`
-- escaped backslash
-- escaped double quote
+Double-quoted strings are supported. The lexer handles newline/tab escapes and escaped characters.
 
 ## Pipeline
 
@@ -36,4 +34,8 @@ Strings use double quotes. The lexer currently supports:
   -> process output
 ```
 
-The syntax in this document is the contract for implemented features only. Proposed v1 features must not be treated as implemented until tests cover them.
+## Not implemented here
+
+Variables, expressions, conditions, loops, functions, classes, ownership, modules, async, package management and the V1 single-colon syntax are not accepted by this baseline.
+
+See [V1_SPEC.md](V1_SPEC.md) for the target language and [STATUS.md](STATUS.md) for the exact implementation boundary.
