@@ -655,7 +655,6 @@ Value execute(const Chunk& c) {
             auto o = std::get_if<Value::Object>(&object.data);
             if (!o) throw CompileError("T3021: member assignment requires object");
             (*o)[key] = std::move(value);
-            stack.push_back(std::move(object));
             break;
         }
 
