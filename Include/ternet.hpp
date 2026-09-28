@@ -22,7 +22,7 @@ struct Stmt{
  std::vector<ExprPtr>print_args,web_parts; std::vector<StmtPtr>body;
  std::vector<std::pair<ExprPtr,std::vector<StmtPtr>>>branches; std::vector<StmtPtr>else_body;
  ExprPtr match_expr; std::vector<std::pair<ExprPtr,std::vector<StmtPtr>>>match_cases; std::vector<StmtPtr>match_default;
- std::vector<std::string>fields,enum_values; std::vector<std::string>params,param_types; std::vector<StmtPtr>function_body;
+ std::vector<std::string>fields,field_types,enum_values; std::vector<std::string>params,param_types; std::vector<StmtPtr>function_body;
  std::string catch_name,web_path; std::vector<StmtPtr>catch_body,finally_body;
 };
 struct Program{std::vector<StmtPtr>statements;}; Program parse(const std::vector<Token>&);
