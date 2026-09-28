@@ -1,41 +1,7 @@
 #include "ternet.hpp"
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <string>
-
-int main(int argc, char** argv) {
-    if (argc != 2) {
-        std::cerr << "Usage: tnc <file.trn>\n";
-        return 1;
-    }
-
-    const std::string path = argv[1];
-    if (path.size() < 4 || path.substr(path.size() - 4) != ".trn") {
-        std::cerr << "Ternet error: source file must use .trn extension\n";
-        return 1;
-    }
-
-    std::ifstream file(path);
-    if (!file) {
-        std::cerr << "Ternet error: cannot open '" << path << "'\n";
-        return 1;
-    }
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-
-    try {
-        const auto tokens = ternet::lex(buffer.str());
-        const auto program = ternet::parse(tokens);
-        const auto bytecode = ternet::compile(program);
-        ternet::VM vm;
-        vm.run(bytecode);
-    } catch (const std::exception& error) {
-        std::cerr << "Ternet error: " << error.what() << '\n';
-        return 1;
-    }
-
-    return 0;
-}
+static int run_file(const std::string&p){if(p.size()<4||p.substr(p.size()-4)!=".trn"){std::cerr<<"tnc: source file must use .trn\n";return 2;}std::ifstream f(p);if(!f){std::cerr<<"tnc: cannot open '"<<p<<"'\n";return 2;}std::stringstream b;b<<f.rdbuf();try{ternet::Interpreter vm;vm.run(ternet::parse(ternet::lex(b.str())));return 0;}catch(const std::exception&e){std::cerr<<"Ternet error: "<<e.what()<<"\n";return 1;}}
+static void help(){std::cout<<"Ternet toolchain\n\nUsage:\n  tnc run <file.trn>\n  tnc check <file.trn>\n  tnc <file.trn>\n  tnc init [dir]\n  tnc add <name> <version>\n  tnc install\n  tnc remove <name>\n  tnc list\n  tnc package\n  tnc version\n";}
+int main(int argc,char**argv){try{if(argc<2){help();return 1;}std::string c=argv[1];if(c=="version"){std::cout<<"Ternet 0.2.0-dev (reference VM)\n";return 0;}if(c=="run"&&argc==3)return run_file(argv[2]);if(c=="check"&&argc==3){std::ifstream f(argv[2]);if(!f)throw ternet::RuntimeError("cannot open '"+std::string(argv[2])+"'");std::stringstream b;b<<f.rdbuf();ternet::parse(ternet::lex(b.str()));std::cout<<"check: ok\n";return 0;}if(c=="init")return ternet::command_init(argc>2?argv[2]:".");if(c=="add"&&argc==4)return ternet::command_add(".",argv[2],argv[3]);if(c=="install")return ternet::command_install(".");if(c=="remove"&&argc==3)return ternet::command_remove(".",argv[2]);if(c=="list")return ternet::command_list(".");if(c=="package")return ternet::command_package(".");if(c.size()>=4&&c.substr(c.size()-4)==".trn")return run_file(c);help();return 1;}catch(const std::exception&e){std::cerr<<"tnc: "<<e.what()<<"\n";return 1;}}
