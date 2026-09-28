@@ -12,13 +12,17 @@
 - reference VM/interpreter
 - `tnc run`, `check`, `version`, `init`, `add`, `install`, `list`, `remove`, `package`
 - local dependency metadata and `ternet.lock`
+- local source-module import resolution for `import` declarations
+- enum declarations and basic `match` statements
+- struct field/member access on the reference VM and bytecode VM
+- webfile lowering and execution in the bytecode VM
 
 ## Not yet implemented
-- static type checker/inference
-- structs/classes/traits/generics
+- production-grade separate compilation/linking and exported module namespaces
+- complete static type inference and user-defined type checking
+- full classes/traits/interfaces/generics
 - ownership/borrowing
 - Option/Result
-- module/import resolution
 - async/await scheduler
 - bytecode compiler/verifier and native backend
 - production filesystem/network/crypto standard libraries
