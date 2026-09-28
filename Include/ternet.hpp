@@ -16,8 +16,8 @@ struct Expr;using ExprPtr=std::shared_ptr<Expr>;
 struct Expr{enum Kind{Literal,Variable,Unary,Binary,Call,Array,Index,Member}kind;Value literal;std::string name,op;ExprPtr left,right;std::vector<ExprPtr>args;ExprPtr index;ExprPtr object;};
 struct Stmt;using StmtPtr=std::shared_ptr<Stmt>;
 struct Stmt{
- enum Kind{ExprStmt,Let,Assign,Print,If,While,For,Struct,Enum,Match,Function,Return,Break,Continue,Throw,Try,WebFile,Block}kind;
- SourcePos pos; std::string name,type_name,return_type; bool mutable_binding=true;
+ enum Kind{ExprStmt,Let,Assign,Print,If,While,For,Struct,Enum,Match,Import,Function,Return,Break,Continue,Throw,Try,WebFile,Block}kind;
+ SourcePos pos; std::string name,type_name,return_type,module_path; bool mutable_binding=true;
  ExprPtr expr,for_start,for_end,target; bool for_inclusive=true;
  std::vector<ExprPtr>print_args,web_parts; std::vector<StmtPtr>body;
  std::vector<std::pair<ExprPtr,std::vector<StmtPtr>>>branches; std::vector<StmtPtr>else_body;
