@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <filesystem>
 #include <unordered_map>
 
 namespace ternet::bytecode {
@@ -304,6 +305,16 @@ struct Compiler {
             emit(Op::Jump, static_cast<int>(loops.back().continue_target));
             return;
 
+        case Stmt::WebFile: {
+            emit(Op::Const, constant(Value(std::string{})));
+            for (const auto& part : s->web_parts) {
+                expr(part);
+                emit(Op::Add);
+            }
+            emit(Op::WebWrite, constant(Value(s->web_path)));
+            return;
+        }
+
         case Stmt::Function:
             if (in_function)
                 throw CompileError("T2106: nested functions are not supported yet");
@@ -409,6 +420,7 @@ void verify(const Chunk& c) {
 
         switch (ins.op) {
         case Op::Const:
+        case Op::WebWrite:
             if (!valid(ins.operand, c.constants.size()))
                 throw CompileError("T6002: invalid constant index");
             break;
@@ -868,6 +880,20 @@ Value execute(const Chunk& c) {
         case Op::Print:
             std::cout << pop().str() << '\n';
             break;
+
+        case Op::WebWrite: {
+            const auto content = pop().str();
+            const auto path_value = c.constants[static_cast<std::size_t>(ins.operand)];
+            const auto path = path_value.str();
+            if (path.empty() || std::filesystem::path(path).is_absolute() || path.find("..") != std::string::npos)
+                throw CompileError("T2105: webfile path must stay inside dist");
+            const auto out = std::filesystem::path("dist") / path;
+            std::filesystem::create_directories(out.parent_path());
+            std::ofstream f(out, std::ios::binary);
+            if (!f) throw CompileError("T2105: cannot write webfile '" + out.string() + "'");
+            f << content;
+            break;
+        }
 
         case Op::Call: {
             const auto& fn = c.functions[static_cast<std::size_t>(ins.operand)];
