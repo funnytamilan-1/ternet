@@ -11,6 +11,7 @@ namespace {
 struct LoopContext {
     std::size_t continue_target = 0;
     std::vector<std::size_t> breaks;
+    std::vector<std::size_t> continues;
 };
 
 struct Compiler {
@@ -186,15 +187,33 @@ struct Compiler {
             expr(s->expr);
             const auto jf = emit(Op::JumpIfFalse);
 
-            loops.push_back({start, {}});
+            loops.push_back({start, {}, {}});
             statements(s->body);
             emit(Op::Jump, static_cast<int>(start));
 
             const auto end = c.code.size();
             patch(jf, end);
             for (const auto br : loops.back().breaks) patch(br, end);
+            for (const auto co : loops.back().continues) patch(co, loops.back().continue_target);
             loops.pop_back();
             return;
+        }
+
+        case Stmt::For: {
+            expr(s->for_start); emit(Op::Store,name(s->name));
+            const int hidden=name("__ternet_for_end_"+std::to_string(c.code.size()));
+            expr(s->for_end); emit(Op::Store,hidden);
+            const auto start=c.code.size();
+            emit(Op::Load,name(s->name)); emit(Op::Load,hidden); emit(Op::Le);
+            const auto jf=emit(Op::JumpIfFalse); loops.push_back({0,{},{}});
+            statements(s->body);
+            const auto continue_target=c.code.size(); loops.back().continue_target=continue_target;
+            emit(Op::Load,name(s->name)); emit(Op::Const,constant(Value((std::int64_t)1))); emit(Op::Add); emit(Op::Store,name(s->name));
+            emit(Op::Jump,static_cast<int>(start));
+            const auto end=c.code.size(); patch(jf,end);
+            for(const auto br:loops.back().breaks) patch(br,end);
+            for(const auto co:loops.back().continues) patch(co,continue_target);
+            loops.pop_back(); return;
         }
 
         case Stmt::Break:
@@ -206,7 +225,7 @@ struct Compiler {
         case Stmt::Continue:
             if (loops.empty())
                 throw CompileError("T2102: continue outside loop");
-            emit(Op::Jump, static_cast<int>(loops.back().continue_target));
+            loops.back().continues.push_back(emit(Op::Jump));
             return;
 
         case Stmt::Function:
