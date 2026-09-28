@@ -12,7 +12,7 @@ enum class Op : std::uint8_t {
     Eq, Ne, Lt, Le, Gt, Ge, And, Or,
     MakeArray, Index,
     Jump, JumpIfFalse, JumpIfTrue,
-    Print, Return
+    Print, Call, Return
 };
 
 struct Instruction {
@@ -20,10 +20,17 @@ struct Instruction {
     std::int32_t operand = 0;
 };
 
+struct FunctionInfo {
+    std::string name;
+    std::vector<std::string> params;
+    std::int32_t entry = 0;
+};
+
 struct Chunk {
     std::vector<Instruction> code;
     std::vector<Value> constants;
     std::vector<std::string> names;
+    std::vector<FunctionInfo> functions;
 };
 
 struct CompileError : RuntimeError {
