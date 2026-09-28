@@ -34,3 +34,7 @@ add_executable(ternet_telegram_test
 )
 target_include_directories(ternet_telegram_test PRIVATE Include)
 add_test(NAME ternet_telegram COMMAND ternet_telegram_test)
+
+add_test(NAME ternet_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
+add_test(NAME ternet_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
+set_tests_properties(ternet_bytecode_exec PROPERTIES DEPENDS ternet_bytecode_build)
