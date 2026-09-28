@@ -208,10 +208,10 @@ Chunk read(const std::string& path) {
         else if(tag==1){std::uint8_t x=0;f.read(reinterpret_cast<char*>(&x),1);c.constants.emplace_back(x!=0);}
         else if(tag==2){std::int64_t x=0;f.read(reinterpret_cast<char*>(&x),8);c.constants.emplace_back(x);}
         else if(tag==3){double x=0;f.read(reinterpret_cast<char*>(&x),8);c.constants.emplace_back(x);}
-        else if(tag==4){std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(n>100000000)throw CompileError("T6015: oversized string constant");std::string s(n,'\\0');f.read(s.data(),static_cast<std::streamsize>(n));c.constants.emplace_back(std::move(s));}
+        else if(tag==4){std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(n>100000000)throw CompileError("T6015: oversized string constant");std::string s(n,'\0');f.read(s.data(),static_cast<std::streamsize>(n));c.constants.emplace_back(std::move(s));}
         else throw CompileError("T6016: invalid constant tag");
     }
-    for(std::uint32_t i=0;i<nn;++i){std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(n>1000000)throw CompileError("T6017: oversized name");std::string s(n,'\\0');f.read(s.data(),static_cast<std::streamsize>(n));c.names.push_back(std::move(s));}
+    for(std::uint32_t i=0;i<nn;++i){std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(n>1000000)throw CompileError("T6017: oversized name");std::string s(n,'\0');f.read(s.data(),static_cast<std::streamsize>(n));c.names.push_back(std::move(s));}
     for(std::uint32_t i=0;i<ni;++i){std::uint8_t op=0;std::int32_t operand=0;f.read(reinterpret_cast<char*>(&op),1);f.read(reinterpret_cast<char*>(&operand),4);if(!f||op>static_cast<std::uint8_t>(Op::Return))throw CompileError("T6010: invalid opcode");c.code.push_back({static_cast<Op>(op),operand});}
     if(!f)throw CompileError("T6011: truncated bytecode");
     verify(c); return c;
