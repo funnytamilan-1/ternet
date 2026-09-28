@@ -341,12 +341,18 @@ void verify(const Chunk& c) {
             break;
         case Op::Load:
         case Op::Store:
+        case Op::GetMember:
+        case Op::SetMember:
             if (!valid(ins.operand, c.names.size()))
                 throw CompileError("T6003: invalid name index");
             break;
         case Op::MakeArray:
             if (ins.operand < 0)
                 throw CompileError("T6005: invalid array size");
+            break;
+        case Op::MakeObject:
+            if (ins.operand < 0)
+                throw CompileError("T6005: invalid object field count");
             break;
         case Op::Call:
             if (!valid(ins.operand, c.functions.size()))
