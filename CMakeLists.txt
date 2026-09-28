@@ -11,8 +11,9 @@ add_executable(tnc
     Ternet/vm.cpp
     Tools/package.cpp
     Modules/telegram.cpp
+    compiler/bytecode.cpp
 )
-target_include_directories(tnc PRIVATE Include)
+target_include_directories(tnc PRIVATE Include compiler)
 
 if(MSVC)
     target_compile_options(tnc PRIVATE /W4)
