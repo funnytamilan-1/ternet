@@ -143,12 +143,16 @@ struct Checker {
             case Stmt::Let: {
                 auto t = expr(s->expr);
                 if (!s->type_name.empty()) {
-                    if (s->type_name=="int"||s->type_name=="size") t.kind=Kind::Int;
-                    else if (s->type_name=="str") t.kind=Kind::String;
-                    else if (s->type_name=="float") t.kind=Kind::Float;
-                    else if (s->type_name=="bool") t.kind=Kind::Bool;
-                    else if (s->type_name=="void") t.kind=Kind::Void;
+                    Type declared{Kind::Unknown};
+                    if (s->type_name=="int"||s->type_name=="size") declared={Kind::Int};
+                    else if (s->type_name=="str") declared={Kind::String};
+                    else if (s->type_name=="float") declared={Kind::Float};
+                    else if (s->type_name=="bool") declared={Kind::Bool};
+                    else if (s->type_name=="void") declared={Kind::Void};
                     else throw CheckError("T3004: unknown type '" + s->type_name + "'");
+                    if (t.kind!=Kind::Unknown && t.kind!=declared.kind)
+                        throw CheckError("T3001: initializer type does not match '" + s->type_name + "'");
+                    t=declared;
                 }
                 if (scopes.back().count(s->name))
                     throw CheckError("T2002: duplicate binding '" + s->name + "'");
