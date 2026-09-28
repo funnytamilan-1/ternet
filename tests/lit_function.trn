@@ -1,0 +1,6 @@
+lit add(a, b) {
+    return a + b:
+}
+
+let answer = add(20, 22):
+tnprint(answer):
