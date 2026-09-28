@@ -1,5 +1,7 @@
 #include "bytecode.hpp"
 #include <fstream>
+#include <cmath>
+#include <iostream>
 #include <limits>
 #include <unordered_map>
 
