@@ -157,68 +157,65 @@ void write(const Chunk& c, const std::string& path) {
     verify(c);
     std::ofstream f(path, std::ios::binary);
     if (!f) throw CompileError("T6005: cannot open bytecode output '" + path + "'");
-    const std::uint32_t magic = 0x544E4231; // TNB1
+    const std::uint32_t magic = 0x544E4232; // TNB2
     const std::uint32_t nc = static_cast<std::uint32_t>(c.constants.size());
     const std::uint32_t nn = static_cast<std::uint32_t>(c.names.size());
     const std::uint32_t ni = static_cast<std::uint32_t>(c.code.size());
-    f.write(reinterpret_cast<const char*>(&magic), sizeof magic);
-    f.write(reinterpret_cast<const char*>(&nc), sizeof nc);
-    f.write(reinterpret_cast<const char*>(&nn), sizeof nn);
-    f.write(reinterpret_cast<const char*>(&ni), sizeof ni);
+    f.write(reinterpret_cast<const char*>(&magic),4);
+    f.write(reinterpret_cast<const char*>(&nc),4);
+    f.write(reinterpret_cast<const char*>(&nn),4);
+    f.write(reinterpret_cast<const char*>(&ni),4);
     for (const auto& v : c.constants) {
-        const auto s = v.str();
-        const std::uint32_t n = static_cast<std::uint32_t>(s.size());
-        f.write(reinterpret_cast<const char*>(&n), sizeof n);
-        f.write(s.data(), static_cast<std::streamsize>(s.size()));
+        std::uint8_t tag=0;
+        if (std::holds_alternative<bool>(v.data)) tag=1;
+        else if (std::holds_alternative<std::int64_t>(v.data)) tag=2;
+        else if (std::holds_alternative<double>(v.data)) tag=3;
+        else if (std::holds_alternative<std::string>(v.data)) tag=4;
+        else if (!std::holds_alternative<std::monostate>(v.data)) throw CompileError("T6014: unsupported constant type");
+        f.write(reinterpret_cast<const char*>(&tag),1);
+        if (tag==1) { auto x=std::get<bool>(v.data); f.write(reinterpret_cast<const char*>(&x),1); }
+        else if (tag==2) { auto x=std::get<std::int64_t>(v.data); f.write(reinterpret_cast<const char*>(&x),8); }
+        else if (tag==3) { auto x=std::get<double>(v.data); f.write(reinterpret_cast<const char*>(&x),8); }
+        else if (tag==4) {
+            const auto& s=std::get<std::string>(v.data);
+            const std::uint32_t n=static_cast<std::uint32_t>(s.size());
+            f.write(reinterpret_cast<const char*>(&n),4); f.write(s.data(),static_cast<std::streamsize>(n));
+        }
     }
     for (const auto& n : c.names) {
-        const std::uint32_t len = static_cast<std::uint32_t>(n.size());
-        f.write(reinterpret_cast<const char*>(&len), sizeof len);
-        f.write(n.data(), static_cast<std::streamsize>(n.size()));
+        const std::uint32_t len=static_cast<std::uint32_t>(n.size());
+        f.write(reinterpret_cast<const char*>(&len),4); f.write(n.data(),static_cast<std::streamsize>(len));
     }
     for (const auto& ins : c.code) {
-        const auto op = static_cast<std::uint8_t>(ins.op);
-        f.write(reinterpret_cast<const char*>(&op), sizeof op);
-        f.write(reinterpret_cast<const char*>(&ins.operand), sizeof ins.operand);
+        const auto op=static_cast<std::uint8_t>(ins.op);
+        f.write(reinterpret_cast<const char*>(&op),1); f.write(reinterpret_cast<const char*>(&ins.operand),4);
     }
     if (!f) throw CompileError("T6006: failed writing bytecode");
 }
 
 Chunk read(const std::string& path) {
-    std::ifstream f(path, std::ios::binary);
+    std::ifstream f(path,std::ios::binary);
     if (!f) throw CompileError("T6007: cannot open bytecode '" + path + "'");
     std::uint32_t magic=0,nc=0,nn=0,ni=0;
-    f.read(reinterpret_cast<char*>(&magic),4);
-    f.read(reinterpret_cast<char*>(&nc),4);
-    f.read(reinterpret_cast<char*>(&nn),4);
-    f.read(reinterpret_cast<char*>(&ni),4);
-    if (magic != 0x544E4231) throw CompileError("T6008: invalid Ternet bytecode");
-    if (nc > 1000000 || nn > 1000000 || ni > 10000000) throw CompileError("T6009: unreasonable bytecode size");
+    f.read(reinterpret_cast<char*>(&magic),4); f.read(reinterpret_cast<char*>(&nc),4);
+    f.read(reinterpret_cast<char*>(&nn),4); f.read(reinterpret_cast<char*>(&ni),4);
+    if (magic!=0x544E4232) throw CompileError("T6008: invalid or unsupported Ternet bytecode");
+    if (nc>1000000||nn>1000000||ni>10000000) throw CompileError("T6009: unreasonable bytecode size");
     Chunk c;
-    // Serialized constants currently use their display form. This reader accepts
-    // strings as constants; production typed constant encoding will replace this
-    // compatibility format before bytecode becomes a stable public ABI.
-    for (std::uint32_t i=0;i<nc;++i) {
-        std::uint32_t n=0; f.read(reinterpret_cast<char*>(&n),4);
-        std::string s(n,'\0'); f.read(s.data(), static_cast<std::streamsize>(n));
-        c.constants.emplace_back(s);
+    for(std::uint32_t i=0;i<nc;++i){
+        std::uint8_t tag=0; f.read(reinterpret_cast<char*>(&tag),1);
+        if(tag==0)c.constants.emplace_back(Value{});
+        else if(tag==1){std::uint8_t x=0;f.read(reinterpret_cast<char*>(&x),1);c.constants.emplace_back(x!=0);}
+        else if(tag==2){std::int64_t x=0;f.read(reinterpret_cast<char*>(&x),8);c.constants.emplace_back(x);}
+        else if(tag==3){double x=0;f.read(reinterpret_cast<char*>(&x),8);c.constants.emplace_back(x);}
+        else if(tag==4){std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(n>100000000)throw CompileError("T6015: oversized string constant");std::string s(n,'\\0');f.read(s.data(),static_cast<std::streamsize>(n));c.constants.emplace_back(std::move(s));}
+        else throw CompileError("T6016: invalid constant tag");
     }
-    for (std::uint32_t i=0;i<nn;++i) {
-        std::uint32_t n=0; f.read(reinterpret_cast<char*>(&n),4);
-        std::string s(n,'\0'); f.read(s.data(), static_cast<std::streamsize>(n));
-        c.names.push_back(std::move(s));
-    }
-    for (std::uint32_t i=0;i<ni;++i) {
-        std::uint8_t op=0; std::int32_t operand=0;
-        f.read(reinterpret_cast<char*>(&op),1); f.read(reinterpret_cast<char*>(&operand),4);
-        if (!f || op > static_cast<std::uint8_t>(Op::Return)) throw CompileError("T6010: invalid opcode");
-        c.code.push_back({static_cast<Op>(op),operand});
-    }
-    if (!f) throw CompileError("T6011: truncated bytecode");
-    verify(c);
-    return c;
+    for(std::uint32_t i=0;i<nn;++i){std::uint32_t n=0;f.read(reinterpret_cast<char*>(&n),4);if(n>1000000)throw CompileError("T6017: oversized name");std::string s(n,'\\0');f.read(s.data(),static_cast<std::streamsize>(n));c.names.push_back(std::move(s));}
+    for(std::uint32_t i=0;i<ni;++i){std::uint8_t op=0;std::int32_t operand=0;f.read(reinterpret_cast<char*>(&op),1);f.read(reinterpret_cast<char*>(&operand),4);if(!f||op>static_cast<std::uint8_t>(Op::Return))throw CompileError("T6010: invalid opcode");c.code.push_back({static_cast<Op>(op),operand});}
+    if(!f)throw CompileError("T6011: truncated bytecode");
+    verify(c); return c;
 }
-
 Value execute(const Chunk& c) {
     verify(c);
     std::vector<Value> stack;
