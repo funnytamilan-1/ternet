@@ -51,6 +51,7 @@ set_tests_properties(ternet_bytecode_short_circuit_exec PROPERTIES DEPENDS terne
 add_test(NAME ternet_bytecode_functions_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode_functions.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode_functions.tbc)
 add_test(NAME ternet_bytecode_functions_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode_functions.tbc)
 set_tests_properties(ternet_bytecode_functions_exec PROPERTIES DEPENDS ternet_bytecode_functions_build)
+add_test(NAME ternet_lit_function COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/lit_function.trn)
 
 add_test(NAME ternet_typecheck COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/bytecode.trn)
 add_test(NAME ternet_typecheck_invalid COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/typecheck_invalid.trn)
