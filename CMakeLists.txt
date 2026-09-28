@@ -11,8 +11,10 @@ add_executable(tnc
     Ternet/vm.cpp
     Tools/package.cpp
     Modules/telegram.cpp
+    compiler/bytecode.cpp
+    compiler/types.cpp
 )
-target_include_directories(tnc PRIVATE Include)
+target_include_directories(tnc PRIVATE Include compiler)
 
 if(MSVC)
     target_compile_options(tnc PRIVATE /W4)
@@ -33,3 +35,11 @@ add_executable(ternet_telegram_test
 )
 target_include_directories(ternet_telegram_test PRIVATE Include)
 add_test(NAME ternet_telegram COMMAND ternet_telegram_test)
+
+add_test(NAME ternet_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
+add_test(NAME ternet_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
+set_tests_properties(ternet_bytecode_exec PROPERTIES DEPENDS ternet_bytecode_build)
+
+add_test(NAME ternet_typecheck COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/bytecode.trn)
+add_test(NAME ternet_typecheck_invalid COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/typecheck_invalid.trn)
+set_tests_properties(ternet_typecheck_invalid PROPERTIES WILL_FAIL TRUE)
