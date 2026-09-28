@@ -18,7 +18,10 @@ if(s->kind==Stmt::Try){
             if(!s->catch_name.empty())scopes.back()[s->catch_name]={std::string(e.what()),true};
             exec_all(s->catch_body);
             scopes.pop_back();
-        } else throw;
+        } else {
+            if(!s->finally_body.empty())exec_all(s->finally_body);
+            throw;
+        }
     }
     if(!s->finally_body.empty())exec_all(s->finally_body);
     return;
