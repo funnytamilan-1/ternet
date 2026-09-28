@@ -23,6 +23,15 @@ std::vector<StmtPtr>braced(){std::vector<StmtPtr>b;need(TokenType::LBrace,"expec
 std::string type(){if(is(TokenType::Keyword)||is(TokenType::Identifier)){auto x=c().text;++i;return x;}throw RuntimeError("expected type at "+std::to_string(c().pos.line));}
 StmtPtr declaration(bool explicit_type=false){auto s=std::make_shared<Stmt>();s->kind=Stmt::Let;s->mutable_binding=true;if(explicit_type)s->type_name=type();if(!is(TokenType::Identifier))throw RuntimeError("expected binding name");s->name=c().text;++i;need(TokenType::Op,"expected '='");s->expr=expr();end();return s;}
 StmtPtr stmt(){auto s=std::make_shared<Stmt>();s->pos=c().pos;
+if(is(TokenType::Keyword,"import")){
+++i; s->kind=Stmt::Import;
+if(is(TokenType::String)){ s->module_path=c().text; ++i; }
+else {
+  if(!is(TokenType::Identifier))throw RuntimeError("expected module name after import");
+  s->module_path=c().text; ++i;
+  while(eat(TokenType::Dot)){ if(!is(TokenType::Identifier))throw RuntimeError("expected module segment after '.'"); s->module_path += "/" + c().text; ++i; }
+}
+end(); return s;}
 if(is(TokenType::Keyword,"webfile")){++i;if(!is(TokenType::String))throw RuntimeError("expected output path after webfile");s->kind=Stmt::WebFile;s->web_path=c().text;++i;need(TokenType::LBrace,"expected '{' after webfile path");while(!is(TokenType::RBrace)&&!is(TokenType::End)){s->web_parts.push_back(expr());end();}need(TokenType::RBrace,"expected '}' after webfile");eat(TokenType::Colon);return s;}
 if(is(TokenType::Keyword,"let")||is(TokenType::Keyword,"mut")||is(TokenType::Keyword,"const")){auto k=c().text;++i;s=declaration();s->mutable_binding=k=="mut";return s;}
 if(is(TokenType::Keyword,"int")||is(TokenType::Keyword,"str")||is(TokenType::Keyword,"float")||is(TokenType::Keyword,"bool")||is(TokenType::Keyword,"size"))return declaration(true);
