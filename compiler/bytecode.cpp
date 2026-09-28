@@ -16,6 +16,8 @@ struct LoopContext {
 struct Compiler {
     Chunk c;
     std::vector<LoopContext> loops;
+    std::unordered_map<std::string, int> function_ids;
+    bool in_function = false;
 
     int constant(Value v) {
         c.constants.push_back(std::move(v));
@@ -69,6 +71,20 @@ struct Compiler {
             else if (e->op == "!") emit(Op::Not);
             else throw CompileError("T3002: unsupported unary operator '" + e->op + "'");
             return;
+
+        case Expr::Call: {
+            if (!e->left || e->left->kind != Expr::Variable)
+                throw CompileError("T3014: call target must be a function");
+            const auto it = function_ids.find(e->left->name);
+            if (it == function_ids.end())
+                throw CompileError("T2001: undefined function '" + e->left->name + "'");
+            const auto& fn = c.functions[static_cast<std::size_t>(it->second)];
+            if (fn.params.size() != e->args.size())
+                throw CompileError("T3015: wrong argument count for '" + e->left->name + "'");
+            for (const auto& a : e->args) expr(a);
+            emit(Op::Call, it->second);
+            return;
+        }
 
         case Expr::Binary:
             if (e->op == "&&") {
@@ -143,6 +159,8 @@ struct Compiler {
             return;
 
         case Stmt::Return:
+            if (!in_function)
+                throw CompileError("T3016: return outside function");
             if (s->expr) expr(s->expr);
             else emit(Op::Const, constant(Value{}));
             emit(Op::Return);
@@ -192,7 +210,9 @@ struct Compiler {
             return;
 
         case Stmt::Function:
-            throw CompileError("T2103: function bytecode lowering is not yet enabled");
+            if (in_function)
+                throw CompileError("T2106: nested functions are not supported yet");
+            return;
 
         case Stmt::Throw:
         case Stmt::Try:
@@ -242,8 +262,36 @@ bool equal_value(const Value& a, const Value& b) {
 
 Chunk compile(const Program& program) {
     Compiler x;
-    x.statements(program.statements);
+
+    for (const auto& s : program.statements) {
+        if (!s || s->kind != Stmt::Function) continue;
+        if (x.function_ids.count(s->name))
+            throw CompileError("T2003: duplicate function '" + s->name + "'");
+        const int id = static_cast<int>(x.c.functions.size());
+        x.function_ids.emplace(s->name, id);
+        FunctionInfo info;
+        info.name = s->name;
+        info.params = s->params;
+        x.c.functions.push_back(std::move(info));
+    }
+
+    for (const auto& s : program.statements)
+        if (s && s->kind != Stmt::Function) x.stmt(s);
     x.emit(Op::Halt);
+
+    for (const auto& s : program.statements) {
+        if (!s || s->kind != Stmt::Function) continue;
+        const int id = x.function_ids.at(s->name);
+        x.c.functions[static_cast<std::size_t>(id)].entry =
+            static_cast<std::int32_t>(x.c.code.size());
+        x.in_function = true;
+        x.loops.clear();
+        x.statements(s->function_body);
+        x.emit(Op::Const, x.constant(Value{}));
+        x.emit(Op::Return);
+        x.in_function = false;
+    }
+
     verify(x.c);
     return x.c;
 }
@@ -271,6 +319,13 @@ void verify(const Chunk& c) {
             if (ins.operand < 0)
                 throw CompileError("T6005: invalid array size");
             break;
+        case Op::Call:
+            if (!valid(ins.operand, c.functions.size()))
+                throw CompileError("T6022: invalid function index");
+            if (c.functions[static_cast<std::size_t>(ins.operand)].entry < 0 ||
+                !valid(c.functions[static_cast<std::size_t>(ins.operand)].entry, c.code.size()))
+                throw CompileError("T6023: invalid function entry");
+            break;
         case Op::Jump:
         case Op::JumpIfFalse:
         case Op::JumpIfTrue:
@@ -288,15 +343,17 @@ void write(const Chunk& c, const std::string& path) {
     std::ofstream f(path, std::ios::binary);
     if (!f) throw CompileError("T6006: cannot open bytecode output '" + path + "'");
 
-    const std::uint32_t magic = 0x544E4232;
+    const std::uint32_t magic = 0x544E4233;
     const std::uint32_t nc = static_cast<std::uint32_t>(c.constants.size());
     const std::uint32_t nn = static_cast<std::uint32_t>(c.names.size());
     const std::uint32_t ni = static_cast<std::uint32_t>(c.code.size());
+    const std::uint32_t nf = static_cast<std::uint32_t>(c.functions.size());
 
     f.write(reinterpret_cast<const char*>(&magic), 4);
     f.write(reinterpret_cast<const char*>(&nc), 4);
     f.write(reinterpret_cast<const char*>(&nn), 4);
     f.write(reinterpret_cast<const char*>(&ni), 4);
+    f.write(reinterpret_cast<const char*>(&nf), 4);
 
     for (const auto& v : c.constants) {
         std::uint8_t tag = 0;
@@ -331,6 +388,20 @@ void write(const Chunk& c, const std::string& path) {
         f.write(n.data(), static_cast<std::streamsize>(len));
     }
 
+    for (const auto& fn : c.functions) {
+        const std::uint32_t nl = static_cast<std::uint32_t>(fn.name.size());
+        f.write(reinterpret_cast<const char*>(&nl), 4);
+        f.write(fn.name.data(), static_cast<std::streamsize>(nl));
+        const std::uint32_t np = static_cast<std::uint32_t>(fn.params.size());
+        f.write(reinterpret_cast<const char*>(&np), 4);
+        for (const auto& p : fn.params) {
+            const std::uint32_t pl = static_cast<std::uint32_t>(p.size());
+            f.write(reinterpret_cast<const char*>(&pl), 4);
+            f.write(p.data(), static_cast<std::streamsize>(pl));
+        }
+        f.write(reinterpret_cast<const char*>(&fn.entry), 4);
+    }
+
     for (const auto& ins : c.code) {
         const auto op = static_cast<std::uint8_t>(ins.op);
         f.write(reinterpret_cast<const char*>(&op), 1);
@@ -344,16 +415,17 @@ Chunk read(const std::string& path) {
     std::ifstream f(path, std::ios::binary);
     if (!f) throw CompileError("T6007: cannot open bytecode '" + path + "'");
 
-    std::uint32_t magic = 0, nc = 0, nn = 0, ni = 0;
+    std::uint32_t magic = 0, nc = 0, nn = 0, ni = 0, nf = 0;
     f.read(reinterpret_cast<char*>(&magic), 4);
     f.read(reinterpret_cast<char*>(&nc), 4);
     f.read(reinterpret_cast<char*>(&nn), 4);
     f.read(reinterpret_cast<char*>(&ni), 4);
+    f.read(reinterpret_cast<char*>(&nf), 4);
 
     if (!f) throw CompileError("T6011: truncated bytecode header");
-    if (magic != 0x544E4232)
+    if (magic != 0x544E4233)
         throw CompileError("T6008: invalid or unsupported Ternet bytecode");
-    if (nc > 1000000 || nn > 1000000 || ni > 10000000)
+    if (nc > 1000000 || nn > 1000000 || ni > 10000000 || nf > 100000)
         throw CompileError("T6009: unreasonable bytecode size");
 
     Chunk c;
@@ -395,6 +467,29 @@ Chunk read(const std::string& path) {
         c.names.push_back(std::move(s));
     }
 
+    for (std::uint32_t i = 0; i < nf; ++i) {
+        std::uint32_t nl = 0;
+        f.read(reinterpret_cast<char*>(&nl), 4);
+        if (nl > 1000000) throw CompileError("T6019: oversized function name");
+        std::string name(nl, '\0');
+        f.read(name.data(), static_cast<std::streamsize>(nl));
+        std::uint32_t np = 0;
+        f.read(reinterpret_cast<char*>(&np), 4);
+        if (np > 100000) throw CompileError("T6020: unreasonable parameter count");
+        FunctionInfo fn;
+        fn.name = std::move(name);
+        for (std::uint32_t p = 0; p < np; ++p) {
+            std::uint32_t pl = 0;
+            f.read(reinterpret_cast<char*>(&pl), 4);
+            if (pl > 1000000) throw CompileError("T6021: oversized parameter name");
+            std::string param(pl, '\0');
+            f.read(param.data(), static_cast<std::streamsize>(pl));
+            fn.params.push_back(std::move(param));
+        }
+        f.read(reinterpret_cast<char*>(&fn.entry), 4);
+        c.functions.push_back(std::move(fn));
+    }
+
     for (std::uint32_t i = 0; i < ni; ++i) {
         std::uint8_t op = 0;
         std::int32_t operand = 0;
@@ -413,8 +508,10 @@ Chunk read(const std::string& path) {
 Value execute(const Chunk& c) {
     verify(c);
 
+    struct Frame { std::size_t return_ip; std::unordered_map<std::string, Value> locals; };
     std::vector<Value> stack;
     std::unordered_map<std::string, Value> vars;
+    std::vector<Frame> frames;
 
     auto pop = [&]() -> Value {
         if (stack.empty()) throw CompileError("T6012: bytecode stack underflow");
@@ -438,7 +535,15 @@ Value execute(const Chunk& c) {
             break;
 
         case Op::Load: {
-            const auto it = vars.find(c.names[static_cast<std::size_t>(ins.operand)]);
+            const auto& key = c.names[static_cast<std::size_t>(ins.operand)];
+            if (!frames.empty()) {
+                const auto lit = frames.back().locals.find(key);
+                if (lit != frames.back().locals.end()) {
+                    stack.push_back(lit->second);
+                    break;
+                }
+            }
+            const auto it = vars.find(key);
             if (it == vars.end())
                 throw CompileError("T2001: undefined variable '" +
                                    c.names[static_cast<std::size_t>(ins.operand)] + "'");
@@ -446,9 +551,13 @@ Value execute(const Chunk& c) {
             break;
         }
 
-        case Op::Store:
-            vars[c.names[static_cast<std::size_t>(ins.operand)]] = pop();
+        case Op::Store: {
+            auto value = pop();
+            const auto& key = c.names[static_cast<std::size_t>(ins.operand)];
+            if (!frames.empty()) frames.back().locals[key] = std::move(value);
+            else vars[key] = std::move(value);
             break;
+        }
 
         case Op::Pop:
             pop();
@@ -612,9 +721,32 @@ Value execute(const Chunk& c) {
             std::cout << pop().str() << '\n';
             break;
 
-        case Op::Return:
+        case Op::Call: {
+            const auto& fn = c.functions[static_cast<std::size_t>(ins.operand)];
+            if (stack.size() < fn.params.size())
+                throw CompileError("T6012: bytecode stack underflow");
+            std::vector<Value> args(fn.params.size());
+            for (std::size_t j = fn.params.size(); j-- > 0;)
+                args[j] = pop();
+            frames.push_back({ip, {}});
+            auto& frame = frames.back();
+            for (std::size_t j = 0; j < fn.params.size(); ++j)
+                frame.locals[fn.params[j]] = std::move(args[j]);
+            if (frames.size() > 10000)
+                throw CompileError("T6024: call stack limit exceeded");
+            ip = static_cast<std::size_t>(fn.entry);
+            break;
+        }
+
+        case Op::Return: {
             result = pop();
-            return result;
+            if (frames.empty()) return result;
+            const auto return_ip = frames.back().return_ip;
+            frames.pop_back();
+            stack.push_back(result);
+            ip = return_ip;
+            break;
+        }
         }
     }
 
