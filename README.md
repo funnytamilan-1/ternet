@@ -2,7 +2,7 @@
 
 Ternet is an experimental programming language implemented in C++17.
 
-> **Truthful status:** the repository currently contains a small working compiler/TVM baseline. The V1 language, secure capability model, standard-library architecture and Docker/OCI-style tooling are specified and are being implemented incrementally.
+> **Truthful status:** the repository currently contains a small working parser + reference VM baseline. The V1 language, secure capability model, standard-library architecture and Docker/OCI-style tooling are specified and are being implemented incrementally.
 
 ## Current working baseline
 - `.trn` source files
@@ -11,8 +11,7 @@ Ternet is an experimental programming language implemented in C++17.
 - multiple print statements
 - escaped strings
 - AST
-- bytecode compiler
-- TVM execution
+- reference VM execution
 - CMake build
 - `tnc <file.trn>` CLI
 - examples and negative tests
@@ -59,7 +58,7 @@ tnprint("Hello, world")::
 tnprint("Ternet")::
 ```
 
-The `::` syntax above is the current implemented baseline. V1's single-colon syntax is specified but not yet implemented.
+The examples above use the currently implemented syntax. V1 remains a separate target specification; unsupported V1 features are not advertised as implemented.
 
 ## Project principles
 1. No fake compiler features.
