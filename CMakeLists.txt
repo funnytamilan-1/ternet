@@ -39,3 +39,7 @@ add_test(NAME ternet_telegram COMMAND ternet_telegram_test)
 add_test(NAME ternet_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
 add_test(NAME ternet_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
 set_tests_properties(ternet_bytecode_exec PROPERTIES DEPENDS ternet_bytecode_build)
+
+add_test(NAME ternet_typecheck COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/bytecode.trn)
+add_test(NAME ternet_typecheck_invalid COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/typecheck_invalid.trn)
+set_tests_properties(ternet_typecheck_invalid PROPERTIES WILL_FAIL TRUE)
