@@ -1,0 +1,3 @@
+# Ternet pre-commit configuration.
+# Hooks are enabled only when their commands are supported by the toolchain.
+repos: []

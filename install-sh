@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "Ternet: use CMake install/package targets"
+exit 1

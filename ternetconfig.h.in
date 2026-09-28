@@ -1,0 +1,4 @@
+/* Future configure compatibility header. */
+#ifndef TERNET_CONFIG_H
+#define TERNET_CONFIG_H
+#endif
