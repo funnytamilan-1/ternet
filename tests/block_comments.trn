@@ -1,11 +1,10 @@
 // Block comments may span lines and must be ignored by the lexer.
-/*
+ /*
   Ternet lexer regression:
   punctuation inside comments: {} [] () : ; => ..
 */
 let answer = 40 /* inline block comment */ + 2:
 tnprint(answer):
 
-/* The comment below ends before the next statement. */
-tnprint("block comments work"):
-
+//= this is a Ternet comment
+tnprint("slash equals comment works"):
