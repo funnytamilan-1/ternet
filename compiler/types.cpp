@@ -101,7 +101,7 @@ struct Checker {
             }
         }
     }
-    void run(const Program&p){scopes.push_back({});body(p.statements,false);}
+    void run(const Program&p){scopes.push_back({}); for(const auto&s:p.statements) if(s->kind==Stmt::Function) functions[s->name]=std::vector<Type>(s->params.size(),Type{Kind::Unknown}); body(p.statements,false);}
 };
 }
 void check(const Program& p){Checker{}.run(p);}
