@@ -164,6 +164,35 @@ struct Checker {
                 throw CheckError("T3014: call target must be a function");
 
             const auto name = e->left->name;
+            if (name == "some" || name == "none") {
+                if (name == "some" && e->args.size() != 1)
+                    throw CheckError("T3034: some() expects one value");
+                if (name == "none" && !e->args.empty())
+                    throw CheckError("T3034: none() expects no arguments");
+                for (const auto& a : e->args) expr(a);
+                return {Kind::User, "Option"};
+            }
+            if (name == "ok" || name == "err") {
+                if (e->args.size() != 1)
+                    throw CheckError("T3035: " + name + "() expects one value");
+                expr(e->args[0]);
+                return {Kind::User, "Result"};
+            }
+            if (name == "is_some" || name == "is_none") {
+                if (e->args.size() != 1)
+                    throw CheckError("T3036: " + name + "() expects one value");
+                expr(e->args[0]);
+                return {Kind::Bool, {}};
+            }
+            if (name == "unwrap_or") {
+                if (e->args.size() != 2)
+                    throw CheckError("T3037: unwrap_or() expects two arguments");
+                const auto option = expr(e->args[0]);
+                const auto fallback = expr(e->args[1]);
+                if (option.kind != Kind::User || option.custom != "Option")
+                    throw CheckError("T3038: unwrap_or() requires Option");
+                return fallback;
+            }
             const auto st = structs.find(name);
             if (st != structs.end()) {
                 if (st->second.fields.size() != e->args.size())
