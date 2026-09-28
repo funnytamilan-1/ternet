@@ -7,10 +7,11 @@
 namespace ternet::bytecode {
 
 enum class Op : std::uint8_t {
-    Halt, Const, Load, Store, Pop,
+    Halt, Const, Load, Store, Pop, Dup,
     Add, Sub, Mul, Div, Mod, Neg, Not,
     Eq, Ne, Lt, Le, Gt, Ge, And, Or,
-    Jump, JumpIfFalse,
+    MakeArray, Index,
+    Jump, JumpIfFalse, JumpIfTrue,
     Print, Return
 };
 
