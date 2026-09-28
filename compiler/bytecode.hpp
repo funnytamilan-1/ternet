@@ -10,7 +10,7 @@ enum class Op : std::uint8_t {
     Halt, Const, Load, Store, Pop, Dup,
     Add, Sub, Mul, Div, Mod, Neg, Not,
     Eq, Ne, Lt, Le, Gt, Ge, And, Or,
-    MakeArray, Index,
+    MakeArray, MakeObject, Index, GetMember, SetMember,
     Jump, JumpIfFalse, JumpIfTrue,
     Print, Call, Return
 };
