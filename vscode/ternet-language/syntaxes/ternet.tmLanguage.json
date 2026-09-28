@@ -1,0 +1,15 @@
+{
+  "scopeName":"source.ternet",
+  "name":"Ternet",
+  "fileTypes":["trn"],
+  "patterns":[
+    {"match":"//.*$","name":"comment.line.ternet"},
+    {"begin":"\"","end":"\"","name":"string.quoted.double.ternet"},
+    {"match":"\\b(?:let|mut|const|fn|if|elif|else|while|for|return|break|continue|import|from|async|await)\\b","name":"keyword.control.ternet"},
+    {"match":"\\b(?:true|false|null)\\b","name":"constant.language.ternet"},
+    {"match":"\\b(?:int|uint|float32|float64|str|bool|byte|size|duration|void)\\b","name":"storage.type.ternet"},
+    {"match":"\\b(?:[0-9]+(?:\\.[0-9]+)?)\\b","name":"constant.numeric.ternet"},
+    {"match":"\\b(?:tnprint|print|len|range)\\b","name":"support.function.ternet"},
+    {"match":"===|!==|==|!=|>=|<=|&&|\\|\\||=>|\\?\\?|\\?\\.|[+*/%<>=!&|?-]","name":"keyword.operator.ternet"}
+  ]
+}
