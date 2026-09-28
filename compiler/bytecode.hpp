@@ -12,7 +12,7 @@ enum class Op : std::uint8_t {
     Eq, Ne, Lt, Le, Gt, Ge, And, Or,
     MakeArray, MakeObject, Index, GetMember, SetMember,
     Jump, JumpIfFalse, JumpIfTrue,
-    Print, Call, Return
+    Print, WebWrite, Call, Return
 };
 
 struct Instruction {
