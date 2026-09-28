@@ -4,10 +4,11 @@
 
 namespace ternet::types {
 
-enum class Kind { Unknown, Null, Bool, Int, Float, String, Array, Void };
+enum class Kind { Unknown, Null, Bool, Int, Float, String, Array, Void, User };
 
 struct Type {
     Kind kind = Kind::Unknown;
+    std::string custom;
     std::string name() const;
 };
 
