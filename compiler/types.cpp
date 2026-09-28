@@ -141,7 +141,15 @@ struct Checker {
 
             switch (s->kind) {
             case Stmt::Let: {
-                const auto t = expr(s->expr);
+                auto t = expr(s->expr);
+                if (!s->type_name.empty()) {
+                    if (s->type_name=="int"||s->type_name=="size") t.kind=Kind::Int;
+                    else if (s->type_name=="str") t.kind=Kind::String;
+                    else if (s->type_name=="float") t.kind=Kind::Float;
+                    else if (s->type_name=="bool") t.kind=Kind::Bool;
+                    else if (s->type_name=="void") t.kind=Kind::Void;
+                    else throw CheckError("T3004: unknown type '" + s->type_name + "'");
+                }
                 if (scopes.back().count(s->name))
                     throw CheckError("T2002: duplicate binding '" + s->name + "'");
                 scopes.back()[s->name] = t;
@@ -181,6 +189,14 @@ struct Checker {
                 scopes.pop_back();
                 break;
 
+            case Stmt::For: {
+                const auto a=expr(s->for_start), b=expr(s->for_end);
+                if ((a.kind!=Kind::Int&&a.kind!=Kind::Unknown)||(b.kind!=Kind::Int&&b.kind!=Kind::Unknown))
+                    throw CheckError("T3005: for range requires int bounds");
+                scopes.push_back({}); scopes.back()[s->name]={Kind::Int}; body(s->body,in_function); scopes.pop_back();
+                break;
+            }
+
             case Stmt::While: {
                 const auto t = expr(s->expr);
                 if (t.kind != Kind::Bool && t.kind != Kind::Unknown)
@@ -193,8 +209,17 @@ struct Checker {
 
             case Stmt::Function: {
                 scopes.push_back({});
-                for (const auto& p : s->params)
-                    scopes.back()[p] = {Kind::Unknown};
+                for (std::size_t i=0;i<s->params.size();++i) {
+                    Type t{Kind::Unknown};
+                    if (i<s->param_types.size()&&!s->param_types[i].empty()) {
+                        if(s->param_types[i]=="int"||s->param_types[i]=="size") t={Kind::Int};
+                        else if(s->param_types[i]=="str") t={Kind::String};
+                        else if(s->param_types[i]=="float") t={Kind::Float};
+                        else if(s->param_types[i]=="bool") t={Kind::Bool};
+                        else throw CheckError("T3004: unknown parameter type '"+s->param_types[i]+"'");
+                    }
+                    scopes.back()[s->params[i]]=t;
+                }
                 body(s->function_body, true);
                 scopes.pop_back();
                 break;
