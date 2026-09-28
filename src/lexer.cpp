@@ -1,100 +1,13 @@
 #include "ternet.hpp"
-
 #include <cctype>
-#include <stdexcept>
-
-namespace ternet {
-
-std::vector<Token> lex(const std::string& source) {
-    std::vector<Token> tokens;
-    std::size_t i = 0;
-    std::size_t line = 1;
-    std::size_t column = 1;
-
-    auto advance = [&]() {
-        if (source[i] == '\n') {
-            ++line;
-            column = 1;
-        } else {
-            ++column;
-        }
-        ++i;
-    };
-
-    while (i < source.size()) {
-        const char c = source[i];
-
-        if (std::isspace(static_cast<unsigned char>(c))) {
-            advance();
-            continue;
-        }
-
-        const auto start_line = line;
-        const auto start_column = column;
-
-        if (c == ':' && i + 1 < source.size() && source[i + 1] == ':') {
-            tokens.push_back({TokenType::ColonColon, "::", line, column});
-            advance();
-            advance();
-            continue;
-        }
-
-        if (c == '(') {
-            tokens.push_back({TokenType::LParen, "(", line, column});
-            advance();
-            continue;
-        }
-
-        if (c == ')') {
-            tokens.push_back({TokenType::RParen, ")", line, column});
-            advance();
-            continue;
-        }
-
-        if (c == '"') {
-            advance();
-            std::string value;
-
-            while (i < source.size() && source[i] != '"') {
-                if (source[i] == '\\' && i + 1 < source.size()) {
-                    advance();
-                    const char escaped = source[i];
-                    if (escaped == 'n') value += '\n';
-                    else if (escaped == 't') value += '\t';
-                    else value += escaped;
-                    advance();
-                } else {
-                    value += source[i];
-                    advance();
-                }
-            }
-
-            if (i >= source.size()) {
-                throw std::runtime_error("Unterminated string at line " +
-                    std::to_string(start_line));
-            }
-
-            advance();
-            tokens.push_back({TokenType::String, value, start_line, start_column});
-            continue;
-        }
-
-        if (source.compare(i, 7, "tnprint") == 0 &&
-            (i + 7 == source.size() ||
-             !std::isalnum(static_cast<unsigned char>(source[i + 7])))) {
-            tokens.push_back({TokenType::KeywordPrint, "tnprint", line, column});
-            for (int n = 0; n < 7; ++n) advance();
-            continue;
-        }
-
-        throw std::runtime_error(
-            "Unexpected character '" + std::string(1, c) +
-            "' at line " + std::to_string(line) +
-            ", column " + std::to_string(column));
-    }
-
-    tokens.push_back({TokenType::End, "", line, column});
-    return tokens;
-}
-
+#include <sstream>
+namespace ternet{
+std::vector<Token>lex(const std::string&s){std::vector<Token>t;size_t i=0,l=1,c=1;auto adv=[&]{if(s[i]=='\n'){++l;c=1;}else ++c;++i;};auto add=[&](TokenType k,const std::string&x){t.push_back({k,x,{l,c}});};
+const char*kw="let mut const fn return if elif else while for in break continue true false null import from as struct class trait impl match async await throw comptime tnprint";
+while(i<s.size()){char ch=s[i];if(std::isspace((unsigned char)ch)){adv();continue;}if(ch=='/'&&i+1<s.size()&&s[i+1]=='/'){while(i<s.size()&&s[i]!='\n')adv();continue;}size_t L=l,C=c;
+if(std::isalpha((unsigned char)ch)||ch=='_'){std::string x;while(i<s.size()&&(std::isalnum((unsigned char)s[i])||s[i]=='_')){x+=s[i];adv();}bool ok=false;std::istringstream q(kw);std::string w;while(q>>w)if(w==x){ok=true;break;}add(ok?TokenType::Keyword:TokenType::Identifier,x);t.back().pos={L,C};continue;}
+if(std::isdigit((unsigned char)ch)){std::string x;bool dot=false;while(i<s.size()&&(std::isdigit((unsigned char)s[i])||(!dot&&s[i]=='.'))){if(s[i]=='.')dot=true;x+=s[i];adv();}add(TokenType::Number,x);t.back().pos={L,C};continue;}
+if(ch=='"'){adv();std::string x;while(i<s.size()&&s[i]!='"'){if(s[i]=='\\'){adv();if(i>=s.size())break;char e=s[i++];++c;if(e=='n')x+='\n';else if(e=='t')x+='\t';else if(e=='r')x+='\r';else x+=e;}else{x+=s[i];adv();}}if(i>=s.size())throw RuntimeError("unterminated string at "+std::to_string(L)+":"+std::to_string(C));adv();add(TokenType::String,x);t.back().pos={L,C};continue;}
+TokenType k;std::string x(1,ch);if(ch=='(')k=TokenType::LParen;else if(ch==')')k=TokenType::RParen;else if(ch=='{')k=TokenType::LBrace;else if(ch=='}')k=TokenType::RBrace;else if(ch=='[')k=TokenType::LBracket;else if(ch==']')k=TokenType::RBracket;else if(ch==',')k=TokenType::Comma;else if(ch==':')k=TokenType::Colon;else if(ch==';')k=TokenType::Semicolon;else if(ch=='.')k=TokenType::Dot;else{k=TokenType::Op;std::string two=i+1<s.size()?s.substr(i,2):"";if(two=="=="||two=="!="||two==">="||two=="<="||two=="&&"||two=="||"||two=="+="||two=="-="||two=="*="||two=="/="||two=="=>"||two==".."){x=two;adv();adv();add(k,x);t.back().pos={L,C};continue;}if(std::string("+-*/%!=<>").find(ch)==std::string::npos)throw RuntimeError("unexpected character '"+x+"' at "+std::to_string(L)+":"+std::to_string(C));}add(k,x);t.back().pos={L,C};adv();}
+t.push_back({TokenType::End,"",{l,c}});return t;}
 }
