@@ -17,7 +17,7 @@ struct LoopContext {
 struct Compiler {
     Chunk c;
     std::vector<LoopContext> loops;
-    std::unordered_map<std::string, int> function_ids;
+    std::unordered_map<std::string, int> function_ids;\n    std::unordered_map<std::string, int> struct_ids;\n    std::unordered_map<std::string, std::vector<std::string>> struct_fields;
     bool in_function = false;
 
     int constant(Value v) {
@@ -66,6 +66,11 @@ struct Compiler {
             emit(Op::Index);
             return;
 
+        case Expr::Member:
+            expr(e->object);
+            emit(Op::GetMember, name(e->name));
+            return;
+
         case Expr::Unary:
             expr(e->right);
             if (e->op == "-") emit(Op::Neg);
@@ -76,7 +81,7 @@ struct Compiler {
         case Expr::Call: {
             if (!e->left || e->left->kind != Expr::Variable)
                 throw CompileError("T3014: call target must be a function");
-            const auto it = function_ids.find(e->left->name);
+            const auto st = struct_ids.find(e->left->name);\n            if (st != struct_ids.end()) {\n                const auto& fields = struct_fields[e->left->name];\n                if (fields.size() != e->args.size()) throw CompileError("T3015: wrong field count for struct");\n                for (const auto& a : e->args) expr(a);\n                emit(Op::MakeObject, st->second);\n                return;\n            }\n            const auto it = function_ids.find(e->left->name);
             if (it == function_ids.end())
                 throw CompileError("T2001: undefined function '" + e->left->name + "'");
             const auto& fn = c.functions[static_cast<std::size_t>(it->second)];
@@ -143,8 +148,14 @@ struct Compiler {
             return;
 
         case Stmt::Assign:
-            expr(s->expr);
-            emit(Op::Store, name(s->name));
+            if (s->target && s->target->kind == Expr::Member) {
+                expr(s->target->object);
+                expr(s->expr);
+                emit(Op::SetMember, name(s->target->name));
+            } else {
+                expr(s->expr);
+                emit(Op::Store, name(s->name));
+            }
             return;
 
         case Stmt::Print:
@@ -228,8 +239,7 @@ struct Compiler {
             loops.back().continues.push_back(emit(Op::Jump));
             return;
 
-        case Stmt::Function:
-            if (in_function)
+        case Stmt::Struct:\n            return;\n\n        case Stmt::Function:\n            if (in_function)
                 throw CompileError("T2106: nested functions are not supported yet");
             return;
 
@@ -279,7 +289,7 @@ bool equal_value(const Value& a, const Value& b) {
 
 } // namespace
 
-Chunk compile(const Program& program) {
+Chunk compile(const Program& program) {\n    Compiler x;\n    for (const auto& st : program.statements) {\n        if (st->kind == Stmt::Struct) {\n            const int id = static_cast<int>(x.struct_ids.size());\n            x.struct_ids[st->name] = id;\n            x.struct_fields[st->name] = st->fields;\n        }\n    }\n    for (const auto& st : program.statements) {\n        if (st->kind == Stmt::Function) {\n            if (x.function_ids.count(st->name)) throw CompileError("T2003: duplicate function");\n            const int id = static_cast<int>(x.c.functions.size());\n            x.function_ids[st->name] = id;\n            x.c.functions.push_back({st->name, st->params, 0});\n        }\n    }\n    for (const auto& st : program.statements) {\n        if (st->kind != Stmt::Function) x.stmt(st);\n    }\n    x.emit(Op::Halt);\n    for (const auto& st : program.statements) {\n        if (st->kind == Stmt::Function) {\n            auto id = x.function_ids.at(st->name);\n            x.c.functions[id].entry = static_cast<int>(x.c.code.size());\n            x.in_function = true;\n            x.statements(st->function_body);\n            x.emit(Op::Const, x.constant(Value{}));\n            x.emit(Op::Return);\n            x.in_function = false;\n        }\n    }\n    verify(x.c);\n    return x.c;\n}\n
     Compiler x;
 
     for (const auto& s : program.statements) {
