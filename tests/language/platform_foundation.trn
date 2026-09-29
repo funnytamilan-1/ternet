@@ -1,0 +1,17 @@
+// Foundation smoke test for constructs currently accepted by the language.
+
+let app_name = "Ternet";
+let version = 1;
+let enabled = true;
+let items = ["ui", "http", "database"];
+
+fn identity(value) {
+    return value;
+}
+
+fn main() {
+    print(identity(app_name));
+    print(version);
+    print(enabled);
+    print(items[0]);
+}
