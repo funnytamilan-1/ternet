@@ -9,6 +9,7 @@ add_executable(tnc
     Parser/lexer.cpp
     Parser/parser.cpp
     Ternet/vm.cpp
+    Ternet/async_runtime.cpp
     Tools/package.cpp
     Modules/telegram.cpp
     compiler/bytecode.cpp
@@ -40,6 +41,23 @@ add_executable(ternet_telegram_test
 target_include_directories(ternet_telegram_test PRIVATE Include)
 add_test(NAME ternet_telegram COMMAND ternet_telegram_test)
 
+add_executable(ternet_async_runtime_test
+    tests/async_runtime_test.cpp
+    Ternet/async_runtime.cpp
+    Ternet/vm.cpp
+    Parser/lexer.cpp
+    Parser/parser.cpp
+    compiler/bytecode.cpp
+    compiler/types.cpp
+)
+target_include_directories(ternet_async_runtime_test PRIVATE Include compiler)
+if(MSVC)
+    target_compile_options(ternet_async_runtime_test PRIVATE /W4)
+else()
+    target_compile_options(ternet_async_runtime_test PRIVATE -Wall -Wextra -Wpedantic -Wno-free-nonheap-object)
+endif()
+add_test(NAME ternet_async_runtime COMMAND ternet_async_runtime_test)
+
 add_test(NAME ternet_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
 add_test(NAME ternet_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode.tbc)
 set_tests_properties(ternet_bytecode_exec PROPERTIES DEPENDS ternet_bytecode_build)
@@ -52,8 +70,8 @@ set_tests_properties(ternet_bytecode_control_exec PROPERTIES DEPENDS ternet_byte
 add_test(NAME ternet_bytecode_short_circuit_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode_short_circuit.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode_short_circuit.tbc)
 add_test(NAME ternet_bytecode_short_circuit_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode_short_circuit.tbc)
 set_tests_properties(ternet_bytecode_short_circuit_exec PROPERTIES DEPENDS ternet_bytecode_short_circuit_build)
-add_test(NAME ternet_bytecode_functions_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode_functions.trn -o ${CMAKE_CURRENT_BINARY_DIR}/bytecode_functions.tbc)
-add_test(NAME ternet_bytecode_functions_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/bytecode_functions.tbc)
+add_test(NAME ternet_bytecode_functions_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/bytecode_functions.trn -o ${CMAKE_CURRENT_BINARY_DIR}/functions.tbc)
+add_test(NAME ternet_bytecode_functions_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/functions.tbc)
 set_tests_properties(ternet_bytecode_functions_exec PROPERTIES DEPENDS ternet_bytecode_functions_build)
 add_test(NAME ternet_lit_function COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/lit_function.trn)
 add_test(NAME ternet_option_result COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/option_result.trn)
