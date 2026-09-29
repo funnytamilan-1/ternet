@@ -11,9 +11,9 @@ struct SourcePos{std::size_t line=1,column=1;};
 enum class TokenType{Identifier,Number,String,Keyword,Op,LParen,RParen,LBrace,RBrace,LBracket,RBracket,Comma,Colon,Semicolon,Dot,End};
 struct Token{TokenType type;std::string text;SourcePos pos;};
 std::vector<Token> lex(const std::string&);
-struct Value{using Array=std::vector<Value>;using Object=std::unordered_map<std::string,Value>;std::variant<std::monostate,bool,std::int64_t,double,std::string,Array,Object> data;Value()=default;template<class T>Value(T v):data(std::move(v)){}bool truthy()const;std::string str()const;};
+struct Value{using Array=std::vector<Value>;struct Tuple{std::vector<Value> items;};using Object=std::unordered_map<std::string,Value>;std::variant<std::monostate,bool,std::int64_t,double,std::string,Array,Tuple,Object> data;Value()=default;template<class T>Value(T v):data(std::move(v)){}bool truthy()const;std::string str()const;};
 struct Expr;using ExprPtr=std::shared_ptr<Expr>;
-struct Expr{enum Kind{Literal,Variable,Unary,Binary,Call,Array,Index,Member}kind;Value literal;std::string name,op;ExprPtr left,right;std::vector<ExprPtr>args;ExprPtr index;ExprPtr object;};
+struct Expr{enum Kind{Literal,Variable,Unary,Binary,Call,Array,Tuple,Index,Member}kind;Value literal;std::string name,op;ExprPtr left,right;std::vector<ExprPtr>args;ExprPtr index;ExprPtr object;};
 struct Stmt;using StmtPtr=std::shared_ptr<Stmt>;
 struct Stmt{
  enum Kind{ExprStmt,Let,Assign,Print,If,While,For,Struct,Enum,Match,Import,Function,Return,Break,Continue,Throw,Try,WebFile,Block}kind;
