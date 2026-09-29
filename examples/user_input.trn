@@ -1,0 +1,10 @@
+// Ternet user input example
+// Run with: tnc run examples/user_input.trn
+
+tnprint("What is your name?"):
+let name = input():
+tnprint("Hello, " + name):
+
+tnprint("Enter your age:"):
+let age = input_int():
+tnprint("Age: " + age):
