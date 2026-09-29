@@ -1,5 +1,7 @@
 <div align="center">
-  <img src="./assets/ternet-logo.png" width="560" alt="Ternet neon cyber programming language logo">
+  <a href="https://github.com/funnytamilan-1/ternet">
+    <img src="./assets/ternet-logo.svg" width="560" alt="Ternet neon cyber programming language logo">
+  </a>
   <h1>Ternet</h1>
   <p><strong>A modern, readable programming language built for software, web development, automation, and security tooling.</strong></p>
   <p>
