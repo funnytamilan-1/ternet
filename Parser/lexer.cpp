@@ -10,9 +10,10 @@ if(ch=='/'&&i+1<s.size()&&s[i+1]=='*'){size_t L=l,C=c;adv();adv();bool closed=fa
 size_t L=l,C=c;
 if(std::isalpha((unsigned char)ch)||ch=='_'){std::string x;while(i<s.size()&&(std::isalnum((unsigned char)s[i])||s[i]=='_')){x+=s[i];adv();}bool ok=false;std::istringstream q(kw);std::string w;while(q>>w)if(w==x){ok=true;break;}add(ok?TokenType::Keyword:TokenType::Identifier,x);t.back().pos={L,C};continue;}
 if(std::isdigit((unsigned char)ch)){std::string x;while(i<s.size()&&std::isdigit((unsigned char)s[i])){x+=s[i];adv();}
-// A range operator must win over decimal-point parsing: 1..5 is a range,
-// while 1.5 is a decimal literal.
-if(i<s.size()&&s[i]=='.'&&i+1<s.size()&&s[i+1]=='.'){add(TokenType::Number,x);t.back().pos={L,C};continue;}
+// Range operators must consume both dots. Otherwise 1..3 becomes Number(1), Dot, Dot
+// and the parser reports a misleading member-name error. A single dot followed by a
+// digit remains a decimal literal such as 1.5.
+if(i<s.size()&&s[i]=='.'&&i+1<s.size()&&s[i+1]=='.'){adv();adv();add(TokenType::Op,"..");t.back().pos={L,C};t.insert(t.end()-1,{TokenType::Number,x,{L,C}});continue;}
 if(i<s.size()&&s[i]=='.'&&i+1<s.size()&&std::isdigit((unsigned char)s[i+1])){x+=s[i];adv();while(i<s.size()&&std::isdigit((unsigned char)s[i])){x+=s[i];adv();}}add(TokenType::Number,x);t.back().pos={L,C};continue;}
 if(ch=='"'){adv();std::string x;while(i<s.size()&&s[i]!='"'){if(s[i]=='\\'){adv();if(i>=s.size())break;char e=s[i++];++c;if(e=='n')x+='\n';else if(e=='t')x+='\t';else if(e=='r')x+='\r';else x+=e;}else{x+=s[i];adv();}}if(i>=s.size())throw RuntimeError("unterminated string at "+std::to_string(L)+":"+std::to_string(C));adv();add(TokenType::String,x);t.back().pos={L,C};continue;}
 TokenType k;std::string x(1,ch);if(ch=='(')k=TokenType::LParen;else if(ch==')')k=TokenType::RParen;else if(ch=='{')k=TokenType::LBrace;else if(ch=='}')k=TokenType::RBrace;else if(ch=='[')k=TokenType::LBracket;else if(ch==']')k=TokenType::RBracket;else if(ch==',')k=TokenType::Comma;else if(ch==':')k=TokenType::Colon;else if(ch==';')k=TokenType::Semicolon;else if(ch=='.')k=TokenType::Dot;else{k=TokenType::Op;std::string two=i+1<s.size()?s.substr(i,2):"";if(two=="=="||two=="!="||two==">="||two=="<="||two=="&&"||two=="||"||two=="+="||two=="-="||two=="*="||two=="/="||two=="=>"||two=="->"||two==".."||two=="::"){x=two;adv();adv();add(k,x);t.back().pos={L,C};continue;}if(std::string("+-*/%!=<>").find(ch)==std::string::npos)throw RuntimeError("unexpected character '"+x+"' at "+std::to_string(l)+":"+std::to_string(c));}add(k,x);t.back().pos={L,C};adv();}
