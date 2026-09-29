@@ -26,15 +26,27 @@ add_executable(tnc-lsp
 )
 target_include_directories(tnc-lsp PRIVATE Include compiler)
 
+add_executable(ternet_lsp_test
+    tests/lsp_smoke.cpp
+    Tools/lsp.cpp
+    Parser/lexer.cpp
+    Parser/parser.cpp
+    compiler/types.cpp
+)
+target_include_directories(ternet_lsp_test PRIVATE Include compiler)
+
 if(MSVC)
     target_compile_options(tnc PRIVATE /W4)
     target_compile_options(tnc-lsp PRIVATE /W4)
+    target_compile_options(ternet_lsp_test PRIVATE /W4)
 else()
     target_compile_options(tnc PRIVATE -Wall -Wextra -Wpedantic -Wno-free-nonheap-object)
     target_compile_options(tnc-lsp PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(ternet_lsp_test PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
 enable_testing()
+add_test(NAME ternet_lsp COMMAND ternet_lsp_test)
 add_test(NAME ternet_core COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/core.trn)
 add_test(NAME ternet_loop COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/loop.trn)
 add_test(NAME ternet_errors COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/errors.trn)
