@@ -1,9 +1,26 @@
-// Ternet Option foundation.
-// Option is represented by tagged constructor functions in the compiler/runtime.
+// Ternet Option standard module.
+// The runtime owns the tagged Option representation; these helpers provide
+// the stable source-level API used by application code.
+
 fn some(value) {
     return value:
 }
 
 fn none() {
     return null:
+}
+
+fn is_some(value) {
+    return value.tag == "Some":
+}
+
+fn is_none(value) {
+    return value.tag == "None":
+}
+
+fn unwrap_or(value, fallback) {
+    if is_some(value) {
+        return value.value:
+    }
+    return fallback:
 }
