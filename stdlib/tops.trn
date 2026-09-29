@@ -1,0 +1,13 @@
+// TOPS — Ternet Object Persistence Syntax
+// V1 API surface. Native parser/writer implementation can replace these
+// declarations as the runtime matures.
+
+fn parse(path) {
+    // Reserved for the native TOPS parser.
+    return tops_parse(path)
+}
+
+fn write(value, path) {
+    // Reserved for the native TOPS serializer.
+    return tops_write(value, path)
+}

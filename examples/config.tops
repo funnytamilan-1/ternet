@@ -1,0 +1,17 @@
+{
+    name = "Ternet"
+    version = 1
+    stable = true
+
+    author = {
+        name = "Ajmal"
+        role = "Developer"
+    }
+
+    features = [
+        "compiler"
+        "bytecode"
+        "vm"
+        "stdlib"
+    ]
+}
