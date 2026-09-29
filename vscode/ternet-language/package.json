@@ -1,1 +1,34 @@
-{"name":"ternet-language","displayName":"Ternet Language","description":"Ternet programming language support for VS Code","version":"0.2.0","publisher":"funnytamilan","engines":{"vscode":"^1.90.0"},"categories":["Programming Languages"],"main":"./extension.js","contributes":{"languages":[{"id":"ternet","aliases":["Ternet","ternet"],"extensions":[".trn"],"configuration":"./language-configuration.json"}],"grammars":[{"language":"ternet","scopeName":"source.ternet","path":"./syntaxes/ternet.tmLanguage.json"}],"commands":[{"command":"ternet.runFile","title":"Ternet: Run File"},{"command":"ternet.checkFile","title":"Ternet: Check File"},{"command":"ternet.formatDocument","title":"Ternet: Format Document"}],"menus":{"editor/title":[{"command":"ternet.runFile","when":"editorLangId == ternet","group":"navigation@1"}]}},"activationEvents":["onLanguage:ternet","onCommand:ternet.runFile","onCommand:ternet.checkFile","onCommand:ternet.formatDocument"]}
+{
+  "name": "ternet-language",
+  "displayName": "Ternet Language",
+  "description": "Ternet programming language support for VS Code",
+  "version": "0.3.0",
+  "publisher": "funnytamilan",
+  "engines": {"vscode": "^1.90.0"},
+  "categories": ["Programming Languages"],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [{"id":"ternet","aliases":["Ternet","ternet"],"extensions":[".trn"],"configuration":"./language-configuration.json"}],
+    "grammars": [{"language":"ternet","scopeName":"source.ternet","path":"./syntaxes/ternet.tmLanguage.json"}],
+    "commands": [
+      {"command":"ternet.runFile","title":"Ternet: Run File"},
+      {"command":"ternet.checkFile","title":"Ternet: Check File"},
+      {"command":"ternet.buildFile","title":"Ternet: Build Bytecode"},
+      {"command":"ternet.formatDocument","title":"Ternet: Format Document"}
+    ],
+    "configuration": {
+      "title": "Ternet",
+      "properties": {
+        "ternet.tncPath": {"type":"string","default":"tnc","description":"Path to the Ternet compiler/CLI executable."}
+      }
+    },
+    "menus": {
+      "editor/title": [
+        {"command":"ternet.runFile","when":"editorLangId == ternet","group":"navigation@1"},
+        {"command":"ternet.checkFile","when":"editorLangId == ternet","group":"navigation@2"},
+        {"command":"ternet.buildFile","when":"editorLangId == ternet","group":"navigation@3"}
+      ]
+    }
+  },
+  "activationEvents": ["onLanguage:ternet","onCommand:ternet.runFile","onCommand:ternet.checkFile","onCommand:ternet.buildFile","onCommand:ternet.formatDocument"]
+}
