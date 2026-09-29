@@ -1,6 +1,5 @@
 // Ternet Option standard module.
-// The runtime owns the tagged Option representation; these helpers provide
-// the stable source-level API used by application code.
+// The compiler/runtime owns the tagged Option representation.
 
 fn some(value) {
     return value:
@@ -11,11 +10,11 @@ fn none() {
 }
 
 fn is_some(value) {
-    return value.tag == "Some":
+    return value.tag == "some":
 }
 
 fn is_none(value) {
-    return value.tag == "None":
+    return value.tag == "none":
 }
 
 fn unwrap_or(value, fallback) {
