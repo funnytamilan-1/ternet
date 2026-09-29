@@ -62,6 +62,7 @@ add_test(NAME ternet_option_result_bytecode_exec COMMAND tnc exec ${CMAKE_CURREN
 set_tests_properties(ternet_option_result_bytecode_exec PROPERTIES DEPENDS ternet_option_result_bytecode_build)
 add_test(NAME ternet_structs COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/structs.trn)
 add_test(NAME ternet_enums_match COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/enums_match.trn)
+add_test(NAME ternet_classes COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/classes.trn)
 add_test(NAME ternet_imports COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/imports.trn)
 add_test(NAME ternet_imports_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/imports.trn -o ${CMAKE_CURRENT_BINARY_DIR}/imports.tbc)
 add_test(NAME ternet_imports_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/imports.tbc)

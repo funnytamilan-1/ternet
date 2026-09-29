@@ -1,0 +1,30 @@
+class Animal {
+    fn speak() {
+        tnprint("Animal"):
+    }
+}
+
+class Dog extends Animal {
+    override fn speak() {
+        tnprint("Dog"):
+    }
+}
+
+class Counter {
+    int value:
+
+    fn init(start) {
+        this.value = start:
+    }
+
+    fn get() {
+        return this.value:
+    }
+}
+
+let animal = Dog():
+animal.speak():
+
+let counter = Counter(41):
+counter.value = 42:
+tnprint(counter.get()):
