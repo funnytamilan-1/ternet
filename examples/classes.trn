@@ -1,0 +1,14 @@
+class Counter {
+    let value: int
+
+    fn init(start: int) {
+        this.value = start:
+    }
+
+    fn get() -> int {
+        return this.value:
+    }
+}
+
+let counter = Counter(42):
+tnprint(counter.get()):
