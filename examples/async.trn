@@ -1,0 +1,5 @@
+async fn greet() {
+    tnprint("hello from async"):
+}
+
+await greet():
