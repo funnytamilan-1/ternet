@@ -1,8 +1,9 @@
 <div align="center">
-  <img src="assets/ternet-logo.svg" width="560" alt="Ternet — neon futuristic programming language logo">
+  <img src="./assets/ternet-logo.png" width="560" alt="Ternet neon cyber programming language logo">
   <h1>Ternet</h1>
   <p><strong>A modern, readable programming language built for software, web development, automation, and security tooling.</strong></p>
   <p>
+    <a href="https://github.com/funnytamilan-1/ternet"><img src="https://img.shields.io/badge/source-GitHub-181717?style=for-the-badge&logo=github" alt="GitHub"></a>
     <img src="https://img.shields.io/badge/language-C%2B%2B17-00599C?style=for-the-badge" alt="C++17">
     <img src="https://img.shields.io/badge/source-.trn-7C3AED?style=for-the-badge" alt=".trn source">
     <img src="https://img.shields.io/badge/status-active%20development-00C853?style=for-the-badge" alt="Active development">
