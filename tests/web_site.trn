@@ -1,0 +1,9 @@
+import "../stdlib/web/dom.trn":
+
+webfile "index.html" {
+    page("Ternet", element("h1", "Hello from Ternet")):
+}
+
+webfile "style.css" {
+    "body{font-family:sans-serif}"
+}
