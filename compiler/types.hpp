@@ -25,8 +25,12 @@ struct Type {
         return {Kind::Generic, std::move(n), std::move(parameters)};
     }
     static Type array(Type element) { return {Kind::Array, {}, {std::move(element)}}; }
+    static Type list(Type element) { return array(std::move(element)); }
     static Type map(Type key, Type value) {
         return {Kind::Map, {}, {std::move(key), std::move(value)}};
+    }
+    static Type tuple(std::vector<Type> elements) {
+        return {Kind::Tuple, {}, std::move(elements)};
     }
     static Type option(Type value) { return {Kind::Option, {}, {std::move(value)}}; }
     static Type result(Type ok, Type error) {
