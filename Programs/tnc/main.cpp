@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <unordered_set>
 
 #ifdef __unix__
 #include <arpa/inet.h>
@@ -26,9 +27,53 @@ static std::string read_source(const std::string& p) {
     return b.str();
 }
 
+static fs::path resolve_import(const fs::path& importer, const std::string& module) {
+    const fs::path base = importer.parent_path();
+    fs::path raw(module);
+    std::vector<fs::path> candidates;
+    if (raw.extension() == ".trn") candidates.push_back(base / raw);
+    else {
+        candidates.push_back(base / raw);
+        candidates.push_back(base / (raw.string() + ".trn"));
+        candidates.push_back(base / raw / "Node.trn");
+        candidates.push_back(base / raw / "main.trn");
+    }
+    for (const auto& p : candidates) if (fs::is_regular_file(p)) return p;
+    throw ternet::RuntimeError("cannot resolve import '" + module + "' from '" + importer.string() + "'");
+}
+
+static void append_loaded(ternet::Program& out, const fs::path& file,
+                          std::unordered_set<std::string>& loading,
+                          std::unordered_set<std::string>& loaded) {
+    const auto canonical = fs::weakly_canonical(file).string();
+    if (loaded.count(canonical)) return;
+    if (!loading.insert(canonical).second)
+        throw ternet::RuntimeError("cyclic import detected at '" + canonical + "'");
+
+    const auto program = ternet::parse(ternet::lex(read_source(canonical)));
+    for (const auto& st : program.statements) {
+        if (st && st->kind == ternet::Stmt::Import) {
+            append_loaded(out, resolve_import(canonical, st->module_path), loading, loaded);
+        } else {
+            out.statements.push_back(st);
+        }
+    }
+
+    loading.erase(canonical);
+    loaded.insert(canonical);
+}
+
+static ternet::Program load_program(const std::string& entry) {
+    ternet::Program out;
+    std::unordered_set<std::string> loading;
+    std::unordered_set<std::string> loaded;
+    append_loaded(out, fs::path(entry), loading, loaded);
+    return out;
+}
+
 static int build_file(const std::string& p, const std::string& out) {
     try {
-        auto program = ternet::parse(ternet::lex(read_source(p)));
+        auto program = load_program(p);
         auto chunk = ternet::bytecode::compile(program);
         ternet::bytecode::write(chunk, out);
         std::cout << "tnc: compiled " << p << " -> " << out << "\n";
@@ -125,7 +170,7 @@ static int run_file(const std::string& p) {
     b << f.rdbuf();
     try {
         ternet::Interpreter vm;
-        vm.run(ternet::parse(ternet::lex(b.str())));
+        vm.run(load_program(p));
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Ternet error E1000: " << e.what() << "\n";
@@ -216,7 +261,7 @@ int main(int argc, char** argv) {
             std::stringstream b;
             b << f.rdbuf();
             try {
-                auto program = ternet::parse(ternet::lex(b.str()));
+                auto program = load_program(argv[2]);
                 ternet::types::check(program);
                 std::cout << "check: ok\n";
                 return 0;

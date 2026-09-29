@@ -1,15 +1,18 @@
 {
-  "scopeName":"source.ternet",
-  "name":"Ternet",
-  "fileTypes":["trn"],
-  "patterns":[
-    {"match":"//.*$","name":"comment.line.ternet"},
-    {"begin":"\"","end":"\"","name":"string.quoted.double.ternet"},
-    {"match":"\\b(?:let|mut|const|fn|if|elif|else|while|for|return|break|continue|import|from|async|await)\\b","name":"keyword.control.ternet"},
-    {"match":"\\b(?:true|false|null)\\b","name":"constant.language.ternet"},
-    {"match":"\\b(?:int|uint|float32|float64|str|bool|byte|size|duration|void)\\b","name":"storage.type.ternet"},
-    {"match":"\\b(?:[0-9]+(?:\\.[0-9]+)?)\\b","name":"constant.numeric.ternet"},
-    {"match":"\\b(?:tnprint|print|len|range)\\b","name":"support.function.ternet"},
-    {"match":"===|!==|==|!=|>=|<=|&&|\\|\\||=>|\\?\\?|\\?\\.|[+*/%<>=!&|?-]","name":"keyword.operator.ternet"}
-  ]
+  "scopeName": "source.ternet",
+  "name": "Ternet",
+  "fileTypes": ["trn"],
+  "patterns": [{"include":"#comments"},{"include":"#strings"},{"include":"#numbers"},{"include":"#keywords"},{"include":"#types"},{"include":"#constants"},{"include":"#functions"},{"include":"#classes"},{"include":"#decorators"},{"include":"#operators"}],
+  "repository": {
+    "comments":{"patterns":[{"match":"//.*$","name":"comment.line.double-slash.ternet"},{"begin":"/\\*","end":"\\*/","name":"comment.block.ternet"}]},
+    "strings":{"patterns":[{"begin":"\"","end":"\"","name":"string.quoted.double.ternet","patterns":[{"match":"\\\\.","name":"constant.character.escape.ternet"}]},{"begin":"'","end":"'","name":"string.quoted.single.ternet","patterns":[{"match":"\\\\.","name":"constant.character.escape.ternet"}]}]},
+    "numbers":{"patterns":[{"match":"\\b(?:0[xX][0-9A-Fa-f]+|0[bB][01]+|[0-9]+(?:\\.[0-9]+)?)\\b","name":"constant.numeric.ternet"}]},
+    "keywords":{"patterns":[{"match":"\\b(?:let|mut|const|fn|return|if|elif|else|while|for|in|break|continue|match|case|import|from|as|export|public|private|protected|struct|class|trait|interface|impl|implements|extends|virtual|override|abstract|final|static|this|super|async|await|spawn|task|channel|throw|try|catch|finally|own|borrow|move|ref|unsafe|namespace|package|generic|where|typeof|is|with|yield|lambda|synchronized|throws|instanceof|volatile|constexpr|macro|attribute|union|extern|auto)\\b","name":"keyword.control.ternet"}]},
+    "types":{"patterns":[{"match":"\\b(?:int|uint|int8|int16|int32|int64|uint8|uint16|uint32|uint64|float|float32|float64|str|string|String|bool|char|byte|size|duration|void|never|Option|Result|List|Map|Array|Tuple)\\b","name":"storage.type.ternet"}]},
+    "constants":{"patterns":[{"match":"\\b(?:true|false|null)\\b","name":"constant.language.ternet"}]},
+    "functions":{"patterns":[{"match":"\\b(?:tnprint|print|input|input_int|input_float|input_bool|len|range|some|none|ok|err)\\b","name":"support.function.ternet"},{"match":"\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()","name":"entity.name.function.ternet"}]},
+    "classes":{"patterns":[{"match":"\\b(?:class|struct|trait|interface|enum)\\s+[A-Za-z_][A-Za-z0-9_]*","name":"entity.name.type.ternet"}]},
+    "decorators":{"patterns":[{"match":"@[A-Za-z_][A-Za-z0-9_]*","name":"entity.name.tag.ternet"}]},
+    "operators":{"patterns":[{"match":"===|!==|==|!=|>=|<=|&&|\\|\\||=>|->|\\?\\?|\\?\\.|\\.\\.|::|[+*/%<>=!&|?-]","name":"keyword.operator.ternet"}]}
+  }
 }

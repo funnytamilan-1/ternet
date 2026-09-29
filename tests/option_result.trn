@@ -1,0 +1,10 @@
+let a = some(42):
+tnprint(is_some(a)):
+tnprint(unwrap_or(a, 0)):
+let b = none():
+tnprint(is_some(b)):
+tnprint(unwrap_or(b, 99)):
+let ok_value = ok("done"):
+let err_value = err("failed"):
+tnprint(ok_value.tag):
+tnprint(err_value.tag):

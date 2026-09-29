@@ -1,0 +1,4 @@
+import "modules/greet.trn":
+
+let message = greet("Ternet"):
+tnprint(message):

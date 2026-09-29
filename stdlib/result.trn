@@ -1,0 +1,8 @@
+// Ternet Result foundation.
+fn ok(value) {
+    return value:
+}
+
+fn err(value) {
+    return value:
+}

@@ -10,9 +10,9 @@ enum class Op : std::uint8_t {
     Halt, Const, Load, Store, Pop, Dup,
     Add, Sub, Mul, Div, Mod, Neg, Not,
     Eq, Ne, Lt, Le, Gt, Ge, And, Or,
-    MakeArray, Index,
+    MakeArray, MakeObject, Index, GetMember, SetMember,
     Jump, JumpIfFalse, JumpIfTrue,
-    Print, Return
+    Print, WebWrite, Call, Return
 };
 
 struct Instruction {
@@ -20,10 +20,17 @@ struct Instruction {
     std::int32_t operand = 0;
 };
 
+struct FunctionInfo {
+    std::string name;
+    std::vector<std::string> params;
+    std::int32_t entry = 0;
+};
+
 struct Chunk {
     std::vector<Instruction> code;
     std::vector<Value> constants;
     std::vector<std::string> names;
+    std::vector<FunctionInfo> functions;
 };
 
 struct CompileError : RuntimeError {

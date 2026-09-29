@@ -1,0 +1,25 @@
+// Ternet Option standard module.
+// The compiler/runtime owns the tagged Option representation.
+
+fn some(value) {
+    return value:
+}
+
+fn none() {
+    return null:
+}
+
+fn is_some(value) {
+    return value.tag == "some":
+}
+
+fn is_none(value) {
+    return value.tag == "none":
+}
+
+fn unwrap_or(value, fallback) {
+    if is_some(value) {
+        return value.value:
+    }
+    return fallback:
+}

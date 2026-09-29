@@ -89,7 +89,7 @@
         },
         {
           "name": "keyword.declaration.ternet",
-          "match": "\\b(?:let|mut|const|comptime|fn|class|interface|trait|impl|enum|type|import|from|as|extends|implements|public|private|protected|override|init)\\b"
+          "match": "\\b(?:let|mut|const|comptime|fn|lit|class|interface|trait|impl|enum|type|import|from|as|extends|implements|public|private|protected|override|init)\\b"
         },
         {
           "name": "keyword.operator.word.ternet",

@@ -1,0 +1,9 @@
+struct User {
+    str name:
+    int age:
+}
+
+let user = User("Ajmal", 15):
+tnprint(user.name):
+user.age = 16:
+tnprint(user.age):
