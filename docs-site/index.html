@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ternet — Programming Language</title>
+<meta name="description" content="Ternet is a readable .trn programming language and toolchain.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="nav"><a class="brand" href="#top">Ternet<span>.dev</span></a><nav><a href="#learn">Learn</a><a href="#language">Language</a><a href="#tools">Tools</a><a href="#roadmap">Roadmap</a><a href="https://github.com/funnytamilan-1/ternet">GitHub</a></nav></header>
+<main id="top">
+<section class="hero"><div class="badge">.trn • tnc • open source</div><h1>A programming language<br><em>built to be readable.</em></h1><p>Ternet is a modern language project for software, web development, automation and tooling, with a C++17 compiler/runtime foundation.</p><div class="actions"><a class="primary" href="#learn">Start learning</a><a class="secondary" href="https://github.com/funnytamilan-1/ternet">View source</a></div></section>
+<section id="learn" class="grid"><article><b>01</b><h2>Install</h2><pre><code>cmake -S . -B build
+cmake --build build</code></pre></article><article><b>02</b><h2>Hello Ternet</h2><pre><code>tnprint("Hello, Ternet")::</code></pre></article><article><b>03</b><h2>Run</h2><pre><code>./build/tnc run examples/hello.trn
+./build/tnc check examples/hello.trn</code></pre></article></section>
+<section id="language" class="section"><div><span class="eyebrow">LANGUAGE</span><h2>One ecosystem,<br>many targets.</h2></div><div class="features"><p><strong>Core language</strong><br>Bindings, functions, expressions, control flow, arrays, structs, enums and matching.</p><p><strong>Modules</strong><br>Local imports with recursive resolution and cycle detection.</p><p><strong>Bytecode + TVM</strong><br>Source → AST → bytecode → verified execution path.</p><p><strong>Developer tools</strong><br>CLI, VS Code language support, diagnostics and formatter integration.</p></div></section>
+<section id="tools" class="section dark"><span class="eyebrow">TOOLCHAIN</span><h2>Made for the editor.</h2><div class="toolrow"><span>Syntax highlighting</span><span>Completion</span><span>Run / Check</span><span>Bytecode build</span><span>Definitions</span></div></section>
+<section id="roadmap" class="section"><span class="eyebrow">ROADMAP</span><h2>From foundation to v1.0.</h2><div class="road"><div><b>v0.1</b> Lexer + Parser</div><div><b>v0.2</b> Core Language</div><div><b>v0.3</b> Modules + Packages</div><div><b>v0.4</b> Standard Library</div><div><b>v0.5</b> Generics + Traits</div><div><b>v0.6</b> Async + Runtime</div><div><b>v0.7</b> Cross-platform</div><div><b>v0.8</b> Production tooling</div><div><b>v0.9</b> Release candidate</div><div><b>v1.0</b> Stable Ternet</div></div><p class="note">Features are marked implemented only when code, tests, documentation and CI verification support the claim.</p></section>
+</main><footer>Built for the Ternet project • <a href="https://github.com/funnytamilan-1/ternet">GitHub</a></footer>
+<script src="app.js"></script>
+</body></html>
