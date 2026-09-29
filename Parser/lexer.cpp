@@ -1,16 +1,212 @@
 #include "ternet.hpp"
 #include <cctype>
 #include <sstream>
-namespace ternet{
-std::vector<Token>lex(const std::string&s){std::vector<Token>t;size_t i=0,l=1,c=1;auto adv=[&]{if(s[i]=='\n'){++l;c=1;}else ++c;++i;};auto add=[&](TokenType k,const std::string&x){t.push_back({k,x,{l,c}});};
-const char*kw="let mut const fn lit return if elif else while for in break continue true false null import from as struct class trait impl match async await throw try catch finally comptime tnprint webfile int str float bool void size";
-while(i<s.size()){char ch=s[i];if(std::isspace((unsigned char)ch)){adv();continue;}
-if(ch=='/'&&i+1<s.size()&&s[i+1]=='/'){while(i<s.size()&&s[i]!='\n')adv();continue;}
-if(ch=='/'&&i+1<s.size()&&s[i+1]=='*'){size_t L=l,C=c;adv();adv();bool closed=false;while(i<s.size()){if(s[i]=='*'&&i+1<s.size()&&s[i+1]=='/'){adv();adv();closed=true;break;}adv();}if(!closed)throw RuntimeError("unterminated block comment at "+std::to_string(L)+":"+std::to_string(C));continue;}
-size_t L=l,C=c;
-if(std::isalpha((unsigned char)ch)||ch=='_'){std::string x;while(i<s.size()&&(std::isalnum((unsigned char)s[i])||s[i]=='_')){x+=s[i];adv();}bool ok=false;std::istringstream q(kw);std::string w;while(q>>w)if(w==x){ok=true;break;}add(ok?TokenType::Keyword:TokenType::Identifier,x);t.back().pos={L,C};continue;}
-if(std::isdigit((unsigned char)ch)){std::string x;bool dot=false;while(i<s.size()&&std::isdigit((unsigned char)s[i])){x+=s[i];adv();}if(i<s.size()&&s[i]=='.'&&i+1<s.size()&&std::isdigit((unsigned char)s[i+1])){dot=true;x+=s[i];adv();while(i<s.size()&&std::isdigit((unsigned char)s[i])){x+=s[i];adv();}}add(TokenType::Number,x);t.back().pos={L,C};continue;}
-if(ch=='"'){adv();std::string x;while(i<s.size()&&s[i]!='"'){if(s[i]=='\\'){adv();if(i>=s.size())break;char e=s[i++];++c;if(e=='n')x+='\n';else if(e=='t')x+='\t';else if(e=='r')x+='\r';else x+=e;}else{x+=s[i];adv();}}if(i>=s.size())throw RuntimeError("unterminated string at "+std::to_string(L)+":"+std::to_string(C));adv();add(TokenType::String,x);t.back().pos={L,C};continue;}
-TokenType k;std::string x(1,ch);if(ch=='(')k=TokenType::LParen;else if(ch==')')k=TokenType::RParen;else if(ch=='{')k=TokenType::LBrace;else if(ch=='}')k=TokenType::RBrace;else if(ch=='[')k=TokenType::LBracket;else if(ch==']')k=TokenType::RBracket;else if(ch==',')k=TokenType::Comma;else if(ch==':')k=TokenType::Colon;else if(ch==';')k=TokenType::Semicolon;else if(ch=='.')k=TokenType::Dot;else{k=TokenType::Op;std::string two=i+1<s.size()?s.substr(i,2):"";if(two=="=="||two=="!="||two==">="||two=="<="||two=="&&"||two=="||"||two=="+="||two=="-="||two=="*="||two=="/="||two=="=>"||two==".."){x=two;adv();adv();add(k,x);t.back().pos={L,C};continue;}if(std::string("+-*/%!=<>").find(ch)==std::string::npos)throw RuntimeError("unexpected character '"+x+"' at "+std::to_string(L)+":"+std::to_string(C));}add(k,x);t.back().pos={L,C};adv();}
-t.push_back({TokenType::End,"",{l,c}});return t;}
+#include <unordered_set>
+
+namespace ternet {
+
+std::vector<Token> lex(const std::string& source) {
+    std::vector<Token> tokens;
+    std::size_t i = 0;
+    std::size_t line = 1;
+    std::size_t column = 1;
+
+    auto advance = [&]() {
+        if (i >= source.size()) return;
+        if (source[i] == '\n') {
+            ++line;
+            column = 1;
+        } else {
+            ++column;
+        }
+        ++i;
+    };
+
+    auto add = [&](TokenType type, const std::string& text, SourcePos pos) {
+        tokens.push_back({type, text, pos});
+    };
+
+    static const std::unordered_set<std::string> keywords = {
+        "let", "mut", "const", "fn", "lit", "return", "if", "elif", "else",
+        "while", "for", "in", "break", "continue", "true", "false", "null",
+        "import", "from", "as", "struct", "class", "trait", "impl", "match",
+        "async", "await", "throw", "try", "catch", "finally", "comptime",
+        "tnprint", "webfile", "int", "str", "float", "bool", "void", "size"
+    };
+
+    while (i < source.size()) {
+        const char ch = source[i];
+
+        if (std::isspace(static_cast<unsigned char>(ch))) {
+            advance();
+            continue;
+        }
+
+        // Line comment.
+        if (ch == '/' && i + 1 < source.size() && source[i + 1] == '/') {
+            while (i < source.size() && source[i] != '\n') advance();
+            continue;
+        }
+
+        // Block comment with proper unterminated-comment diagnostics.
+        if (ch == '/' && i + 1 < source.size() && source[i + 1] == '*') {
+            const SourcePos start{line, column};
+            advance();
+            advance();
+            bool closed = false;
+            while (i < source.size()) {
+                if (source[i] == '*' && i + 1 < source.size() && source[i + 1] == '/') {
+                    advance();
+                    advance();
+                    closed = true;
+                    break;
+                }
+                advance();
+            }
+            if (!closed) {
+                throw RuntimeError("unterminated block comment at " +
+                                   std::to_string(start.line) + ":" +
+                                   std::to_string(start.column));
+            }
+            continue;
+        }
+
+        const SourcePos start{line, column};
+
+        if (std::isalpha(static_cast<unsigned char>(ch)) || ch == '_') {
+            std::string text;
+            while (i < source.size() &&
+                   (std::isalnum(static_cast<unsigned char>(source[i])) || source[i] == '_')) {
+                text += source[i];
+                advance();
+            }
+            add(keywords.count(text) ? TokenType::Keyword : TokenType::Identifier, text, start);
+            continue;
+        }
+
+        if (std::isdigit(static_cast<unsigned char>(ch))) {
+            std::string text;
+            while (i < source.size() && std::isdigit(static_cast<unsigned char>(source[i]))) {
+                text += source[i];
+                advance();
+            }
+
+            if (i < source.size() && source[i] == '.' &&
+                i + 1 < source.size() && std::isdigit(static_cast<unsigned char>(source[i + 1]))) {
+                text += source[i];
+                advance();
+                while (i < source.size() && std::isdigit(static_cast<unsigned char>(source[i]))) {
+                    text += source[i];
+                    advance();
+                }
+            }
+
+            // Reject malformed numeric forms instead of silently splitting them.
+            if (i < source.size() && (std::isalpha(static_cast<unsigned char>(source[i])) || source[i] == '_')) {
+                throw RuntimeError("invalid numeric literal at " +
+                                   std::to_string(start.line) + ":" +
+                                   std::to_string(start.column));
+            }
+
+            add(TokenType::Number, text, start);
+            continue;
+        }
+
+        if (ch == '"') {
+            advance();
+            std::string text;
+            bool closed = false;
+
+            while (i < source.size()) {
+                if (source[i] == '"') {
+                    advance();
+                    closed = true;
+                    break;
+                }
+
+                if (source[i] == '\n') {
+                    throw RuntimeError("unterminated string at " +
+                                       std::to_string(start.line) + ":" +
+                                       std::to_string(start.column));
+                }
+
+                if (source[i] == '\\') {
+                    advance();
+                    if (i >= source.size()) break;
+
+                    const char escaped = source[i];
+                    advance();
+                    switch (escaped) {
+                        case 'n': text += '\n'; break;
+                        case 't': text += '\t'; break;
+                        case 'r': text += '\r'; break;
+                        case '\\': text += '\\'; break;
+                        case '"': text += '"'; break;
+                        case '0': text += '\0'; break;
+                        default:
+                            throw RuntimeError("unknown escape sequence \\" +
+                                               std::string(1, escaped) + " at " +
+                                               std::to_string(line) + ":" +
+                                               std::to_string(column - 1));
+                    }
+                    continue;
+                }
+
+                text += source[i];
+                advance();
+            }
+
+            if (!closed) {
+                throw RuntimeError("unterminated string at " +
+                                   std::to_string(start.line) + ":" +
+                                   std::to_string(start.column));
+            }
+            add(TokenType::String, text, start);
+            continue;
+        }
+
+        TokenType type;
+        std::string text(1, ch);
+
+        switch (ch) {
+            case '(': type = TokenType::LParen; break;
+            case ')': type = TokenType::RParen; break;
+            case '{': type = TokenType::LBrace; break;
+            case '}': type = TokenType::RBrace; break;
+            case '[': type = TokenType::LBracket; break;
+            case ']': type = TokenType::RBracket; break;
+            case ',': type = TokenType::Comma; break;
+            case ':': type = TokenType::Colon; break;
+            case ';': type = TokenType::Semicolon; break;
+            case '.': type = TokenType::Dot; break;
+            default: {
+                type = TokenType::Op;
+                const std::string two = i + 1 < source.size() ? source.substr(i, 2) : "";
+                static const std::unordered_set<std::string> two_char_ops = {
+                    "==", "!=", ">=", "<=", "&&", "||", "+=", "-=", "*=", "/=", "=>", ".."
+                };
+                if (two_char_ops.count(two)) {
+                    text = two;
+                    advance();
+                    advance();
+                    add(type, text, start);
+                    continue;
+                }
+                if (std::string("+-*/%!=<>=").find(ch) == std::string::npos) {
+                    throw RuntimeError("unexpected character '" + text + "' at " +
+                                       std::to_string(start.line) + ":" +
+                                       std::to_string(start.column));
+                }
+                break;
+            }
+        }
+
+        add(type, text, start);
+        advance();
+    }
+
+    tokens.push_back({TokenType::End, "", {line, column}});
+    return tokens;
 }
+
+} // namespace ternet
