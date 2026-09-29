@@ -1,0 +1,20 @@
+name: Ternet LSP
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lsp:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: CTest
+        run: ctest --test-dir build --output-on-failure -C Release
+      - name: LSP binary smoke
+        run: test -x build/tnc-lsp
