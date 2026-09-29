@@ -20,6 +20,7 @@ target_include_directories(tnc PRIVATE Include compiler)
 add_executable(tnc-lsp
     Programs/tnc/lsp_main.cpp
     Tools/lsp.cpp
+    Tools/formatter.cpp
     Parser/lexer.cpp
     Parser/parser.cpp
     compiler/types.cpp
@@ -29,6 +30,7 @@ target_include_directories(tnc-lsp PRIVATE Include compiler)
 add_executable(ternet_lsp_test
     tests/lsp_smoke.cpp
     Tools/lsp.cpp
+    Tools/formatter.cpp
     Parser/lexer.cpp
     Parser/parser.cpp
     compiler/types.cpp
