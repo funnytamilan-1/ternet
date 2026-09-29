@@ -4,9 +4,9 @@ enum Status {
     FAILED
 }
 
-let status = "RUNNING":
+let status = Status.RUNNING:
 match status {
-    "IDLE" => tnprint("idle"):
-    "RUNNING" => tnprint("running"):
+    Status.IDLE => tnprint("idle"):
+    Status.RUNNING => tnprint("running"):
     _ => tnprint("other"):
 }
