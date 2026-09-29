@@ -47,15 +47,25 @@ Ternet v1.0 is a stable programming-language release, not a README-only mileston
 - debugger integration
 - generated API documentation
 - VS Code extension
+- documentation website
+- browser playground
 
-## Platforms
+## Platform and distribution
 - Linux
 - Windows
 - macOS
+- WebAssembly target
 - reproducible CI release builds
+- install/distribution packages
 
 ## Quality gates
 A feature is only considered implemented when it has source code, tests, documentation, and CI coverage. Experimental features must remain explicitly marked experimental until their compatibility contract is defined.
+
+## Current implementation status
+
+The repository currently has a working lexer/parser, interpreter/bytecode foundations, local module loading, package metadata commands, webfile support, CMake tests and VS Code language support. The docs site and editor experience are being developed alongside the compiler.
+
+The following remain implementation work rather than claims of completion: full generics/traits, ownership/borrowing, production async runtime, complete standard library, remote package registry/solver, security enforcement, native backend, full LSP/DAP, and cross-platform release automation.
 
 ## v1.0 exit criteria
 - language specification frozen
@@ -64,4 +74,5 @@ A feature is only considered implemented when it has source code, tests, documen
 - release artifacts for supported platforms
 - package tooling tested end-to-end
 - editor syntax/tooling tested against real `.trn` programs
+- documentation site complete
 - no README-only feature claims
