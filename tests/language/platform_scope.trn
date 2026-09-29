@@ -1,0 +1,20 @@
+// Smoke test for the language constructs already available in the development build.
+
+let name = "Ternet";
+mut count = 1;
+const version = 1;
+let values = [1, 2, 3];
+
+enum Status {
+    Ready
+    Done
+}
+
+fn add(a, b) {
+    return a + b;
+}
+
+fn main() {
+    count = add(count, values[0]);
+    tnprint(name, version, count);
+}
