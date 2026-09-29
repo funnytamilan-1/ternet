@@ -1,1 +1,66 @@
-{"$schema":"https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json","name":"Ternet","scopeName":"source.ternet","patterns":[{"include":"#comments"},{"include":"#strings"},{"include":"#numbers"},{"include":"#keywords"},{"include":"#types"},{"include":"#constants"},{"include":"#functions"},{"include":"#operators"}],"repository":{"comments":{"patterns":[{"name":"comment.line.double-slash.ternet","match":"//.*$"},{"name":"comment.block.ternet","begin":"/\\*","end":"\\*/"}]},"strings":{"patterns":[{"name":"string.quoted.double.ternet","begin":"\"","end":"\"","patterns":[{"match":"\\\\.","name":"constant.character.escape.ternet"}]}]},"numbers":{"patterns":[{"name":"constant.numeric.ternet","match":"\\b(?:0[xX][0-9a-fA-F]+|0[bB][01]+|[0-9]+(?:\\.[0-9]+)?)\\b"}]},"keywords":{"patterns":[{"name":"keyword.control.ternet","match":"\\b(?:if|elif|else|while|for|in|break|continue|return|throw|try|catch|finally|match|import|from|as|async|await|webfile)\\b|\\b(?:let|mut|const|fn|lit|class|struct|trait|impl|enum|interface|extends|implements)\\b"}]},"types":{"patterns":[{"name":"storage.type.ternet","match":"\\b(?:int|str|float|bool|size|void)\\b"}]},"constants":{"patterns":[{"name":"constant.language.ternet","match":"\\b(?:true|false|null)\\b"}]},"functions":{"patterns":[{"name":"entity.name.function.ternet","match":"\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"}]},"operators":{"patterns":[{"name":"keyword.operator.ternet","match":"==|!=|<=|>=|&&|\\|\\||\\.\\.|=>|[+*/%<>=!-]"}]}}}
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Ternet",
+  "scopeName": "source.ternet",
+  "patterns": [
+    {"include": "#shebang"},
+    {"include": "#comments"},
+    {"include": "#strings"},
+    {"include": "#numbers"},
+    {"include": "#keywords"},
+    {"include": "#types"},
+    {"include": "#constants"},
+    {"include": "#declarations"},
+    {"include": "#functions"},
+    {"include": "#attributes"},
+    {"include": "#operators"}
+  ],
+  "repository": {
+    "shebang": {"patterns": [{"name": "comment.line.shebang.ternet", "match": "^#!.*$"}]},
+    "comments": {"patterns": [
+      {"name": "comment.line.double-slash.ternet", "match": "//.*$"},
+      {"name": "comment.block.ternet", "begin": "/\\*", "end": "\\*/"}
+    ]},
+    "strings": {"patterns": [
+      {"name": "string.quoted.double.ternet", "begin": "\"", "end": "\"", "patterns": [
+        {"name": "constant.character.escape.ternet", "match": "\\\\(?:[ntr\\\"0]|u\\{[0-9A-Fa-f]+\\})"}
+      ]}
+    ]},
+    "numbers": {"patterns": [
+      {"name": "constant.numeric.hex.ternet", "match": "\\b0[xX][0-9A-Fa-f]+\\b"},
+      {"name": "constant.numeric.binary.ternet", "match": "\\b0[bB][01]+\\b"},
+      {"name": "constant.numeric.float.ternet", "match": "\\b[0-9]+\\.[0-9]+\\b"},
+      {"name": "constant.numeric.integer.ternet", "match": "\\b[0-9]+\\b"}
+    ]},
+    "keywords": {"patterns": [
+      {"name": "keyword.control.ternet", "match": "\\b(?:if|elif|else|while|for|in|break|continue|return|match|throw|try|catch|finally)\\b"},
+      {"name": "keyword.control.import.ternet", "match": "\\b(?:import|from|as)\\b"},
+      {"name": "keyword.control.async.ternet", "match": "\\b(?:async|await)\\b"},
+      {"name": "storage.type.declaration.ternet", "match": "\\b(?:let|mut|const|fn|lit|class|struct|enum|trait|impl|interface|extends|implements)\\b"},
+      {"name": "keyword.other.ternet", "match": "\\b(?:comptime|webfile)\\b"}
+    ]},
+    "types": {"patterns": [
+      {"name": "storage.type.primitive.ternet", "match": "\\b(?:int|str|float|bool|size|void)\\b"},
+      {"name": "support.type.ternet", "match": "\\b(?:Option|Result|String|Array|Map|Set|Task|Future)\\b"}
+    ]},
+    "constants": {"patterns": [
+      {"name": "constant.language.ternet", "match": "\\b(?:true|false|null)\\b"}
+    ]},
+    "declarations": {"patterns": [
+      {"name": "entity.name.type.class.ternet", "match": "\\b(?:class|struct|enum|trait|interface)\\s+[A-Za-z_][A-Za-z0-9_]*"},
+      {"name": "entity.name.function.ternet", "match": "\\bfn\\s+[A-Za-z_][A-Za-z0-9_]*"}
+    ]},
+    "functions": {"patterns": [
+      {"name": "entity.name.function.call.ternet", "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"}
+    ]},
+    "attributes": {"patterns": [
+      {"name": "entity.other.attribute-name.ternet", "match": "@[A-Za-z_][A-Za-z0-9_]*"}
+    ]},
+    "operators": {"patterns": [
+      {"name": "keyword.operator.comparison.ternet", "match": "==|!=|<=|>=|<|>"},
+      {"name": "keyword.operator.logical.ternet", "match": "&&|\\|\\|"},
+      {"name": "keyword.operator.assignment.ternet", "match": "\\+=|-=|\\*=|/=|="},
+      {"name": "keyword.operator.ternet", "match": "\\.\\.|=>|[+*/%!-]"}
+    ]}
+  }
+}
