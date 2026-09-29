@@ -1,34 +1,104 @@
 # Ternet Implementation Status
 
-## Implemented in 0.2 development build
-- `.trn` lexer with locations, comments and escaped strings
-- integers, floats, booleans and null
-- immutable `let`, mutable `mut`, immutable `const`
-- arithmetic, comparison and logical operators
-- arrays and indexing
-- `tnprint(...)` with multiple arguments
-- `if / elif / else`, `while`, `break`, `continue`
-- named functions, arguments and `return`
-- reference VM/interpreter
-- `tnc run`, `check`, `version`, `init`, `add`, `install`, `list`, `remove`, `package`
-- local dependency metadata and `ternet.lock`
-- local source-module import resolution for `import` declarations
-- enum declarations and basic `match` statements
-- struct field/member access on the reference VM and bytecode VM
-- webfile lowering and execution in the bytecode VM
+This tracker is the source of truth for the requested platform scope. A feature is **planned** until executable implementation and regression tests are present.
 
-## Not yet implemented
-- production-grade separate compilation/linking and exported module namespaces
-- complete static type inference and user-defined type checking
-- full classes/traits/interfaces/generics
-- ownership/borrowing
-- Option/Result
-- async/await scheduler
-- bytecode compiler/verifier and native backend
-- production filesystem/network/crypto standard libraries
-- remote registry, signatures and integrity verification
-- formatter/linter/LSP/debugger/profiler
-- OCI/Docker integration
-- capability enforcement and sandboxed OS access
+## Existing implementation baseline
 
-A feature is implemented only when code and regression tests exist.
+The current development build already includes `.trn` lexing, primitive values, `let`/`mut`/`const`, operators, arrays, control flow, named functions, the reference VM/interpreter, CLI/package commands, local module imports, enums/basic match, struct member access, and webfile lowering. See the existing regression suite before extending these systems.
+
+## Language Core
+
+- [ ] let / mut / const — extend existing implementation with full compile-time semantics
+- [ ] Functions / closures
+- [ ] Classes / objects
+- [ ] Struct / enum — extend existing struct/enum support to full semantics
+- [ ] Traits / interfaces
+- [ ] Generics
+- [ ] Pattern matching — extend basic match to exhaustive/destructuring matching
+- [ ] Type inference
+- [ ] Option / Result
+- [ ] Error handling
+
+## Collections
+
+- [ ] List
+- [ ] Dict / Map
+- [ ] Set
+- [ ] Tuple
+- [ ] Iterator
+
+## Runtime
+
+- [ ] VM — harden current reference/bytecode paths
+- [ ] Bytecode — verifier/compiler completeness
+- [ ] GC
+- [ ] Modules — production namespaces and separate compilation
+- [ ] FFI
+- [ ] Native extensions
+
+## Concurrency
+
+- [ ] async / await
+- [ ] Tasks
+- [ ] Threads
+- [ ] Channels
+- [ ] Synchronization
+
+## Data
+
+- [ ] JSON
+- [ ] TOPS
+- [ ] File I/O
+- [ ] Serialization
+
+## Networking
+
+- [ ] HTTP / HTTPS
+- [ ] REST
+- [ ] WebSocket
+- [ ] TCP / UDP
+- [ ] DNS
+
+## Database
+
+- [ ] SQLite
+- [ ] PostgreSQL
+- [ ] MySQL
+- [ ] Connection pooling
+
+## App Development
+
+- [ ] UI components
+- [ ] Events
+- [ ] State
+- [ ] Navigation
+- [ ] Forms
+- [ ] Animations
+- [ ] Local storage
+- [ ] Notifications
+
+## Tooling
+
+- [ ] tnc — extend existing CLI with production compiler workflows
+- [ ] Package manager — extend existing local package commands with a remote registry
+- [ ] Formatter
+- [ ] Linter
+- [ ] Debugger
+- [ ] Test framework
+- [ ] REPL
+- [ ] Documentation generator
+
+## IDE
+
+- [ ] VS Code
+- [ ] Syntax highlighting
+- [ ] IntelliSense
+- [ ] LSP
+- [ ] Go to definition
+- [ ] Diagnostics
+- [ ] Formatting
+- [ ] Debugging
+
+## Implementation rule
+
+Do not mark an item complete from documentation or a stub alone. Each item requires executable code, integration, and regression tests. Unsupported features must remain explicitly unimplemented rather than being represented by placeholders as if they were production-ready.
