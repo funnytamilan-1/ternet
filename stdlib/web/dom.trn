@@ -1,0 +1,10 @@
+// Ternet Web/DOM standard library surface.
+// These declarations are intentionally small and map to the web backend.
+
+fn element(tag, text) {
+    return "<" + tag + ">" + text + "</" + tag + ":
+}
+
+fn page(title, body) {
+    return "<!doctype html><html><head><meta charset=\"utf-8\"><title>" + title + "</title></head><body>" + body + "</body></html>":
+}
