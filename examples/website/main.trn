@@ -1,0 +1,13 @@
+import "../../stdlib/web/dom.trn":
+
+webfile "index.html" {
+    page("Ternet Website", "<main><h1>Ternet</h1><p>Built with the Ternet web standard library.</p><button id=\"hello\">Hello</button></main>"):
+}
+
+webfile "style.css" {
+    "body{font-family:system-ui,sans-serif;max-width:760px;margin:4rem auto;padding:2rem}main{display:grid;gap:1rem}button{width:max-content;padding:.7rem 1rem;border-radius:.5rem;border:1px solid #888;background:transparent;cursor:pointer}"
+}
+
+webfile "app.js" {
+    "document.querySelector('#hello').addEventListener('click',()=>alert('Hello from Ternet!'));"
+}
