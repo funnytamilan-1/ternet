@@ -1,0 +1,17 @@
+// Ternet feature smoke test.
+// This intentionally exercises syntax already supported by the current parser/runtime.
+
+let name = "Ternet";
+let version = 1;
+let active = true;
+let values = [1, 2, 3];
+
+fn add(a, b) {
+    return a + b;
+}
+
+fn main() {
+    print(name);
+    print(add(version, values[0]));
+    print(active);
+}
