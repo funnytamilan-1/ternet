@@ -62,3 +62,35 @@ jobs:
           path: |
             *.tar.gz
             *.zip
+
+  tooling:
+    name: Validate tooling and repository metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Ternet repository metadata
+        run: python3 scripts/validate_repo.py
+
+      - name: Validate VS Code extension JSON
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for p in [
+              Path('vscode/ternet-language/package.json'),
+              Path('vscode/ternet-language/language-configuration.json'),
+              Path('vscode/ternet-language/syntaxes/ternet.tmLanguage.json'),
+              Path('vscode-ternet/package.json'),
+              Path('vscode-ternet/language-configuration.json'),
+              Path('vscode-ternet/syntaxes/ternet.tmLanguage.json'),
+          ]:
+              json.loads(p.read_text(encoding='utf-8'))
+              print(f'valid JSON: {p}')
+          PY
+
+      - name: Validate frontend TypeScript build
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
