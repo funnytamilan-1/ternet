@@ -1,50 +1,51 @@
-# Ternet
+<div align="center">
+  <img src="assets/ternet-logo.svg" width="560" alt="Ternet — neon futuristic programming language logo">
+  <h1>Ternet</h1>
+  <p><strong>A modern, readable programming language built for software, web development, automation, and security tooling.</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/language-C%2B%2B17-00599C?style=for-the-badge" alt="C++17">
+    <img src="https://img.shields.io/badge/source-.trn-7C3AED?style=for-the-badge" alt=".trn source">
+    <img src="https://img.shields.io/badge/status-active%20development-00C853?style=for-the-badge" alt="Active development">
+  </p>
+</div>
 
-Ternet is a C++17 programming-language project built around readable \`.trn\` source files, the \`tnc\` command-line tool, a reference interpreter, and a bytecode/TVM execution path.
+---
 
-> **Truthful status:** Ternet is actively implemented, but it is **not yet a completely finished production programming language**. Some language features, standard-library modules, package downloading, resource limits, native compilation, and security enforcement remain work in progress. This README documents implemented behavior separately from planned behavior.
+## What is Ternet?
+
+Ternet is a C++17 programming-language project built around readable `.trn` source files, the `tnc` command-line tool, a reference interpreter, and a bytecode/TVM execution path.
+
+> **Truthful status:** Ternet is actively implemented, but it is **not yet a completely finished production programming language**. Some advanced language features, standard-library modules, package infrastructure, resource controls, native compilation, and security enforcement are still under development.
 
 ## Quick start
 
-Build:
-
-\`\`\`bash
+```bash
 cmake -S . -B build
 cmake --build build
-\`\`\`
-
-Run:
-
-\`\`\`bash
 ./build/tnc run examples/hello.trn
-\`\`\`
-
-Check:
-
-\`\`\`bash
 ./build/tnc check examples/hello.trn
-\`\`\`
+```
 
 Compile and execute bytecode:
 
-\`\`\`bash
+```bash
 ./build/tnc build examples/hello.trn -o hello.tbc
 ./build/tnc exec hello.tbc
-\`\`\`
+```
 
 ## Hello Ternet
 
-\`\`\`trn
+```trn
 tnprint("Hello, Ternet"):
 tnprint("Welcome to .trn"):
-\`\`\`
+```
 
-Statements can currently use \`:\` or \`;\` terminators.
+Statements can currently use `:` or `;` terminators.
 
 ## Variables
 
-\`\`\`trn
-let name = "Ajmal":
+```trn
+let name = "Ternet":
 mut score = 10:
 score = 20:
 const answer = 42:
@@ -52,15 +53,13 @@ const answer = 42:
 tnprint(name):
 tnprint(score):
 tnprint(answer):
-\`\`\`
+```
 
-\`let\` and \`const\` bindings are immutable in the current runtime; \`mut\` creates a mutable binding.
+`let` and `const` bindings are immutable in the current runtime; `mut` creates a mutable binding.
 
-## Global/top-level variables
+## Global / top-level scope
 
-Top-level bindings live in the program's top-level execution scope:
-
-\`\`\`trn
+```trn
 let app_name = "Ternet":
 mut request_count = 0:
 
@@ -69,48 +68,44 @@ lit show_app() {
 }
 
 show_app():
-\`\`\`
+```
 
-A complete separate compilation/module-global system is not yet implemented, so do not confuse top-level scope with a finished linker-level global-variable ABI.
+Top-level bindings currently live in the program's top-level execution scope. A complete separate-compilation/global-linker ABI is still future work.
 
-## The \`lit\` function keyword
+## `lit` functions
 
-Ternet now supports \`lit\` as a function declaration keyword:
+`lit` is Ternet's function declaration keyword. It is **not a datatype**.
 
-\`\`\`trn
+```trn
 lit add(a, b) {
     return a + b:
 }
 
 let result = add(20, 22):
 tnprint(result):
-\`\`\`
+```
 
-\`fn\` remains supported:
+`fn` remains supported:
 
-\`\`\`trn
+```trn
 fn multiply(a, b) {
     return a * b:
 }
-\`\`\`
+```
 
-The important semantic rule is simple: **\`lit\` declares a function; it is not a variable datatype.**
+## Functions and recursion
 
-## Functions
-
-Current function support includes named functions, parameters, calls, return values and recursion.
-
-\`\`\`trn
+```trn
 lit square(x) {
     return x * x:
 }
 
 tnprint(square(12)):
-\`\`\`
+```
 
 Recursive example:
 
-\`\`\`trn
+```trn
 lit fact(n) {
     if {n <= 1}; {
         return 1:
@@ -119,39 +114,35 @@ lit fact(n) {
 }
 
 tnprint(fact(5)):
-\`\`\`
+```
 
-## Current runtime value types
+## Runtime values
 
-The current \`Value\` representation contains:
+The current `Value` representation includes:
 
 | Type | Example |
 |---|---|
-| null | \`null\` |
-| bool | \`true\` |
-| integer | \`42\` |
-| float | \`3.14\` |
-| string | \`"hello"\` |
-| array | \`[1, 2, 3]\` |
-| object | runtime representation exists, but object literals are not yet a complete surface feature |
+| null | `null` |
+| bool | `true` |
+| integer | `42` |
+| float | `3.14` |
+| string | `"hello"` |
+| array | `[1, 2, 3]` |
+| object | runtime object representation |
 
-Basic static checking exists for several of these categories.
+## Operators
 
-## Expressions and operators
-
-Implemented core operators:
-
-\`\`\`text
+```text
 +  -  *  /  %
 == !=
 >  <  >= <=
 && ||
 !
-\`\`\`
+```
 
 Example:
 
-\`\`\`trn
+```trn
 let a = 10:
 let b = 3:
 
@@ -162,43 +153,30 @@ tnprint(a / b):
 tnprint(a % b):
 tnprint(a > b):
 tnprint(a == 10):
-\`\`\`
+```
 
 Division by zero is rejected by the runtime.
 
 ## Strings
 
-Escaped strings are supported:
-
-\`\`\`trn
+```trn
 let text = "line1\nline2":
 tnprint(text):
-\`\`\`
-
-The editor grammar also recognizes interpolation syntax:
-
-\`\`\`trn
-let name = "Ajmal":
-tnprint("Hello \${name}"):
-\`\`\`
+```
 
 ## Arrays
 
-Basic arrays and indexing are implemented:
-
-\`\`\`trn
+```trn
 let numbers = [10, 20, 30, 40]:
 tnprint(numbers[0]):
 tnprint(numbers[3]):
-\`\`\`
+```
 
 Out-of-range array access raises a runtime error.
 
-A complete collections library with push/pop/map/filter/set/map/generic iterator APIs is still future work.
-
 ## Conditions
 
-\`\`\`trn
+```trn
 let age = 15:
 
 if {age >= 18}; {
@@ -206,69 +184,79 @@ if {age >= 18}; {
 } else {
     tnprint("minor"):
 }
-\`\`\`
-
-The parser also contains \`elif\` support.
+```
 
 ## Loops
 
-The implemented baseline includes \`while\`:
+`while`, `break`, and `continue` are supported in the runtime/compiler paths.
 
-\`\`\`trn
+```trn
 mut count = 0:
 
 while {count < 5}; {
     tnprint(count):
     count = count + 1:
 }
-\`\`\`
+```
 
-\`break\` and \`continue\` are represented in the runtime/compiler paths.
+The `for` syntax exists in the language vocabulary, but its complete surface semantics remain under active development.
 
-The \`for\` keyword exists in the language vocabulary, but the complete for-loop parser/runtime semantics are not yet complete.
+## Structs, enums and match
 
-## Errors
+The language now has compiler/runtime foundations for struct member access, enums, and basic matching.
 
-Reference-runtime exception syntax includes:
+Example direction:
 
-\`\`\`trn
-try {
-    throw "something went wrong":
-} catch error {
-    tnprint(error):
-} finally {
-    tnprint("finished"):
+```trn
+enum Status {
+    IDLE,
+    RUNNING,
+    FAILED
 }
-\`\`\`
 
-The bytecode exception path is not yet advertised as complete.
+let status = Status.RUNNING:
+
+match status {
+    Status.IDLE => tnprint("idle"):
+    Status.RUNNING => tnprint("running"):
+    _ => tnprint("other"):
+}
+```
+
+Advanced classes, traits, interfaces and generic user-defined types remain under development.
+
+## Modules / imports
+
+Local `.trn` imports are supported through the current source loader.
+
+```trn
+import "modules/greet.trn":
+```
+
+The loader recursively resolves local modules and detects cyclic imports. Full separate compilation, exported namespaces, remote packages and linker-level module ABI remain future work.
+
+## Option / Result
+
+Ternet's compiler/runtime has tagged `some`, `none`, `ok`, `err`, and `unwrap_or` foundations. The standard-library API is still being expanded.
 
 ## Web generation
 
-The reference runtime can write generated files into \`dist/\`:
+Ternet can generate files into `dist/`:
 
-\`\`\`trn
+```trn
 webfile "index.html" {
     "<!doctype html>":
     "<html><body>":
     "<h1>Hello from Ternet</h1>":
     "</body></html>":
 }
-\`\`\`
+```
 
-Build:
-
-\`\`\`bash
-./build/tnc web build tests/web.trn
-\`\`\`
-
-The current implementation rejects absolute paths and parent-directory traversal for generated web files.
+The bytecode path also has webfile lowering/execution support. Absolute paths and parent-directory traversal are rejected.
 
 ## Bytecode / TVM
 
-Ternet has two execution paths: a reference interpreter and a bytecode VM.
-
-\`\`\`text
+```text
 Ternet source
     |
     v
@@ -287,262 +275,126 @@ Bytecode + Verifier
     |
     v
 TVM
-\`\`\`
+```
 
-The implemented bytecode path includes core expressions, variables, arrays/indexing, control flow, short-circuit operations and function call/return frames.
+The bytecode path covers core expressions, variables, arrays/indexing, control flow, short-circuit operations, function calls/returns, structs/member operations, enums/match, local imports, and webfile output.
 
 ## Static checker
 
-Run:
-
-\`\`\`bash
+```bash
 ./build/tnc check file.trn
-\`\`\`
+```
 
-The checker currently covers basic literals, bindings, arithmetic/comparison, arrays, function arity, assignments, conditions, returns and several statement forms.
+The checker covers core literals, bindings, arithmetic/comparison, arrays, function arity, assignments, conditions, returns and several statement forms.
 
-It is **not** yet a complete ownership/borrowing, generics, trait, lifetime or advanced inference checker.
+It is **not yet** a complete ownership/borrowing, generics, trait, lifetime or advanced-inference checker.
 
-## Package/project commands
+## Package commands
 
-Current project commands:
-
-\`\`\`bash
+```bash
 tnc init
 tnc add json 1.0.0
 tnc list
 tnc install
 tnc remove json
 tnc package
-\`\`\`
+```
 
-A project may look like:
+The current package implementation manages project metadata, lockfiles and local package state. A production remote registry, dependency solver, downloads, checksums and signatures are still under development.
 
-\`\`\`text
-my_app/
-├── Node.trn
-├── ternet.toml
-├── ternet.lock
-├── src/
-│   └── main.trn
-└── .ternet/
-\`\`\`
+## Standard library roadmap
 
-The current package implementation creates dependency metadata and a lockfile/package directory. It is **not yet a remote registry client** with dependency graph solving, downloads, checksums, signatures and registry mirrors.
+Planned/expanding modules include:
 
-## Standard library vision
-
-The standard library is intentionally designed as a collection of focused modules.
-
-### Core
-
-\`\`\`text
+```text
 core
 string
 collections
 option
 result
-\`\`\`
-
-### Math
-
-Target modules:
-
-\`\`\`text
 math
-math.constants
-math.trigonometry
-math.geometry
-math.statistics
-\`\`\`
-
-Target API style:
-
-\`\`\`trn
-math.sqrt(25)
-math.abs(-10)
-math.pow(2, 8)
-math.sin(angle)
-math.cos(angle)
-\`\`\`
-
-These calls are **future API examples**, not claims that those modules are already implemented.
-
-### Random
-
-Target module:
-
-\`\`\`text
 random
-\`\`\`
-
-Target API:
-
-\`\`\`trn
-random.int(1, 100)
-random.float()
-random.choice(items)
-random.shuffle(items)
-\`\`\`
-
-Ordinary pseudo-random generation and cryptographically secure randomness should be separate APIs.
-
-### Files/data
-
-\`\`\`text
 fs
 path
 io
 json
 toml
 csv
-\`\`\`
-
-### Network
-
-\`\`\`text
 net
 http
 tls
 url
 websocket
-\`\`\`
-
-### Async/concurrency
-
-\`\`\`text
 async
 sync
 channel
-atomic
-timer
-\`\`\`
-
-### Crypto
-
-\`\`\`text
-crypto.hash
-crypto.hmac
-crypto.random
-crypto.encoding
-\`\`\`
-
-### OS/process
-
-\`\`\`text
+crypto
 process
 env
-signals
-os
 terminal
-\`\`\`
-
-### Developer tools
-
-\`\`\`text
 log
-trace
 test
 bench
-inspect
-\`\`\`
+```
 
-## Advanced language roadmap
+The presence of a name in this roadmap does **not** mean every API is already implemented.
 
-These are architectural targets, not current feature claims:
+## Security architecture
 
-- typed declarations and richer inference
-- structs
-- classes
-- traits
-- interfaces
-- implementations
-- enums
-- pattern matching
-- Option/Result
-- nullable types
-- generics
-- closures/lambdas
-- async/await
-- channels
-- ownership and borrowing
-- attributes
-- compile-time execution
-- capability-gated I/O
-- resource limits
-- native backend
-- WebAssembly
-- debugger
-- formatter
-- linter
-- language server
-- REPL
-- documentation generator
-- benchmark framework
-- remote package registry
-- reproducible builds
-- dependency integrity
-- OCI/container integration
+Ternet is designed around a verifier/runtime trust boundary:
 
-## Security
-
-The intended trust boundary is:
-
-\`\`\`text
+```text
 Source -> Lexer -> Parser -> Semantic analysis
       -> IR/Bytecode -> Verifier -> TVM
-\`\`\`
+```
 
-Sensitive capabilities should eventually be explicit:
+Future capability examples include:
 
-\`\`\`text
+```text
 fs.read
 fs.write
 net.connect
 net.listen
 process.spawn
-environment/secret access
+secret/environment access
 native FFI
-device access
 raw sockets
-\`\`\`
+```
 
-Target command shape:
+A security design is not considered an implemented security feature until enforcement and regression tests exist.
 
-\`\`\`bash
-tnc run app.trn --allow fs:read=./config --allow net:connect
-\`\`\`
+## Resource limits
 
-The capability model is a design target until enforcement and tests exist.
+Future runtime controls include CPU time, wall-clock timeout, heap/RAM, call depth, output size, file size and network usage.
 
-## CPU and RAM
+## Toolchain roadmap
 
-The runtime uses memory for values, arrays, strings, scopes, bytecode and function frames. CPU is consumed during lexing, parsing, compilation and execution.
-
-A complete configurable resource manager is not yet implemented.
-
-Future resource controls can include:
-
-\`\`\`text
-CPU time
-wall-clock timeout
-heap/RAM
-call depth
-array/object size
-output size
-file size
-network usage
-\`\`\`
-
-A possible future command is:
-
-\`\`\`bash
-tnc run app.trn --memory 256MB --timeout 5s
-\`\`\`
+- Generics and advanced type inference
+- Option/Result refinement
+- Classes and methods
+- Traits/interfaces
+- Ownership and borrowing
+- Async/await scheduler
+- Production filesystem/network/HTTP/TLS/JSON/crypto libraries
+- Full module namespaces and separate compilation
+- Remote package registry and dependency solving
+- Package integrity/signatures
+- Capability enforcement
+- Resource limits
+- Full bytecode exception handling
+- LSP and DAP debugger
+- Formatter and linter
+- REPL
+- Native backend
+- WebAssembly backend
+- Production web framework
+- Full IDE
+- Browser playground
+- Cross-platform release/toolchain
 
 ## Repository structure
 
-\`\`\`text
+```text
 Include/                 Public C++ interfaces
 Parser/                  Lexer + parser
 Ternet/                  Reference runtime
@@ -555,46 +407,22 @@ examples/                User examples
 docs/                    Specifications and design
 syntaxes/                TextMate grammar
 contrib/                 Contribution aids
-\`\`\`
+assets/                  Project branding/assets
+```
 
 ## Editor and GitHub support
 
-Ternet source uses \`.trn\`.
+Ternet source uses `.trn`. The repository includes TextMate syntax grammar, Linguist preparation and editor-oriented metadata.
 
-The repository includes:
-
-- \`.gitattributes\`
-- \`syntaxes/ternet.tmLanguage.json\`
-- Linguist sample files
-- a proposed Linguist language definition
-- Linguist submission documentation
-
-Repository-side mapping does not automatically register Ternet globally in GitHub. Global recognition requires an accepted GitHub Linguist change.
+Global GitHub Linguist recognition requires acceptance of the relevant upstream language-definition change; repository files alone do not register a language globally.
 
 ## Testing
 
-Run:
-
-\`\`\`bash
+```bash
 ctest --test-dir build --output-on-failure
-\`\`\`
+```
 
-Every implemented feature should have positive coverage and negative coverage where meaningful.
-
-Examples of existing test areas include:
-
-- core execution
-- loops
-- errors
-- block comments
-- web generation
-- Telegram client foundation
-- bytecode
-- arrays
-- control flow
-- short-circuiting
-- functions
-- type checking
+Every implemented feature should have positive and negative regression coverage where meaningful.
 
 ## Development principles
 
@@ -612,79 +440,23 @@ When implementation changes, the README and relevant docs must be updated.
 
 ### Security is enforcement
 
-A security design document alone is not a security feature. Enforcement and regression tests are required.
+A security design document alone is not a security feature.
 
 ### Small verified steps
 
 Large language changes should be split into focused commits so regressions are easy to locate.
 
-## Current implementation snapshot
-
-### Working foundation
-
-- \`.trn\` lexer
-- comments and block comments
-- strings and escapes
-- numbers
-- booleans and null
-- arrays
-- variables
-- mutable/immutable bindings
-- arithmetic/comparison
-- logical operators
-- conditions
-- while loops
-- functions
-- recursion
-- \`fn\`
-- \`lit\` function declarations
-- function calls
-- return
-- bytecode compilation
-- bytecode execution
-- bytecode verification
-- basic static checking
-- webfile output
-- package/project commands
-- HTTP health server
-- Telegram client foundation
-- GitHub Linguist preparation
-
-### Still incomplete
-
-- complete typed surface syntax
-- complete for loops
-- class/trait/interface execution
-- generics
-- pattern matching
-- async runtime
-- production math/random standard library
-- remote package registry
-- dependency resolution/integrity
-- capability enforcement
-- resource quotas
-- native compiler
-- production debugger/LSP
-- full cross-platform toolchain
-- complete security hardening
-
-## Versioning
-
-Ternet is still evolving. Until a stable language specification is declared, syntax and semantics may change.
-
 ## Contributing
 
-Use \`main\` for current development and verify changes locally:
-
-\`\`\`bash
+```bash
 git checkout main
 git pull
 cmake -S . -B build
 cmake --build build
 ctest --test-dir build --output-on-failure
-\`\`\`
+```
 
-A good contribution contains the implementation, tests and documentation together.
+A good contribution contains implementation, tests and documentation together.
 
 ## License
 
