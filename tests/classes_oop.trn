@@ -1,0 +1,16 @@
+class Animal {
+    virtual fn speak () {
+        tnprint ("Animal" ): 
+    }
+}
+class Dog extends Animal {
+    override fn speak () {
+        tnprint ("Dog" ): 
+    }
+}
+fn main () {
+    let animal:
+    Animal = Dog ():
+    animal .speak (): 
+}
+main (): 

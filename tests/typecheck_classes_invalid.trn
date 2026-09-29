@@ -1,0 +1,7 @@
+class Animal {
+    fn speak() {
+        tnprint("Animal"):
+    }
+}
+
+let animal: Animal = "not an animal":

@@ -1,0 +1,7 @@
+let str_val = "hello world":
+tnprint(str_val.to_upper()):
+tnprint(str_val.contains("world")):
+tnprint(str_val.substr(0, 5)):
+tnprint(abs(-42)):
+tnprint(min(10, 20)):
+tnprint(max(10, 20)):

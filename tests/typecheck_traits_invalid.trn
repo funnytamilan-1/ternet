@@ -1,0 +1,9 @@
+trait Drawable {
+    fn draw()
+}
+
+class BadPlayer implements Drawable {
+    fn other_thing() {
+        tnprint("other"):
+    }
+}

@@ -1,0 +1,7 @@
+let user: (String, int, bool) = ("Ajmal", 15, true):
+let name = user.0:
+let age = user.1:
+let active = user.2:
+tnprint(name):
+tnprint(age):
+tnprint(active):

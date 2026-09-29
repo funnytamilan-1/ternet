@@ -8,15 +8,17 @@ namespace ternet::bytecode {
 
 enum class Op : std::uint8_t {
     Halt, Const, Load, Store, Pop, Dup,
-    Add, Sub, Mul, Div, Mod, Neg, Not,
+    Add, Sub, Mul, Div, Mod, Neg, Not, BitAnd, BitOr, BitXor, ShiftLeft, ShiftRight,
     Eq, Ne, Lt, Le, Gt, Ge, And, Or,
-    MakeArray, MakeObject, Index, GetMember, SetMember,
+    MakeArray, MakeTuple, MakeObject, Index, SetIndex, GetMember, SetMember,
     Jump, JumpIfFalse, JumpIfTrue,
-    Print, WebWrite, Call, Return
+    Call, CallMethod, Return,
+    Print, WebWrite,
+    PushCatch, PopCatch, Throw
 };
 
 struct Instruction {
-    Op op;
+    Op op = Op::Halt;
     std::int32_t operand = 0;
 };
 
@@ -26,11 +28,19 @@ struct FunctionInfo {
     std::int32_t entry = 0;
 };
 
+struct ClassInfo {
+    std::string name;
+    std::string base_name;
+    std::vector<std::string> fields;
+    std::vector<std::string> methods;
+};
+
 struct Chunk {
     std::vector<Instruction> code;
     std::vector<Value> constants;
     std::vector<std::string> names;
     std::vector<FunctionInfo> functions;
+    std::vector<ClassInfo> classes;
 };
 
 struct CompileError : RuntimeError {

@@ -77,3 +77,41 @@ set_tests_properties(ternet_for_typed_invalid PROPERTIES WILL_FAIL TRUE)
 add_test(NAME ternet_typecheck COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/bytecode.trn)
 add_test(NAME ternet_typecheck_invalid COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/typecheck_invalid.trn)
 set_tests_properties(ternet_typecheck_invalid PROPERTIES WILL_FAIL TRUE)
+
+# Lists
+add_test(NAME ternet_lists COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/lists.trn)
+add_test(NAME ternet_lists_check COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/lists.trn)
+add_test(NAME ternet_lists_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/lists.trn -o ${CMAKE_CURRENT_BINARY_DIR}/lists.tbc)
+add_test(NAME ternet_lists_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/lists.tbc)
+set_tests_properties(ternet_lists_bytecode_exec PROPERTIES DEPENDS ternet_lists_bytecode_build)
+
+# Tuples
+add_test(NAME ternet_tuples COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/tuples.trn)
+add_test(NAME ternet_tuples_check COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/tuples.trn)
+add_test(NAME ternet_tuples_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/tuples.trn -o ${CMAKE_CURRENT_BINARY_DIR}/tuples.tbc)
+add_test(NAME ternet_tuples_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/tuples.tbc)
+set_tests_properties(ternet_tuples_bytecode_exec PROPERTIES DEPENDS ternet_tuples_bytecode_build)
+
+# Classes and OOP (Inheritance, Virtual Dispatch, Polymorphism)
+add_test(NAME ternet_classes COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/classes_oop.trn)
+add_test(NAME ternet_classes_check COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/classes_oop.trn)
+add_test(NAME ternet_classes_bytecode_build COMMAND tnc build ${CMAKE_SOURCE_DIR}/tests/classes_oop.trn -o ${CMAKE_CURRENT_BINARY_DIR}/classes.tbc)
+add_test(NAME ternet_classes_bytecode_exec COMMAND tnc exec ${CMAKE_CURRENT_BINARY_DIR}/classes.tbc)
+set_tests_properties(ternet_classes_bytecode_exec PROPERTIES DEPENDS ternet_classes_bytecode_build)
+add_test(NAME ternet_classes_invalid COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/typecheck_classes_invalid.trn)
+set_tests_properties(ternet_classes_invalid PROPERTIES WILL_FAIL TRUE)
+
+# Traits and Interfaces
+add_test(NAME ternet_traits COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/traits_interfaces.trn)
+add_test(NAME ternet_traits_check COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/traits_interfaces.trn)
+add_test(NAME ternet_traits_invalid COMMAND tnc check ${CMAKE_SOURCE_DIR}/tests/typecheck_traits_invalid.trn)
+set_tests_properties(ternet_traits_invalid PROPERTIES WILL_FAIL TRUE)
+
+# Generics
+add_test(NAME ternet_generics COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/generics.trn)
+
+# Exceptions
+add_test(NAME ternet_exceptions COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/exceptions.trn)
+
+# Stdlib
+add_test(NAME ternet_stdlib COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/stdlib.trn)

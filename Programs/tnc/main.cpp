@@ -19,9 +19,11 @@
 
 namespace fs = std::filesystem;
 
+namespace ternet {
+
 static std::string read_source(const std::string& p) {
     std::ifstream f(p);
-    if (!f) throw ternet::RuntimeError("cannot open '" + p + "'");
+    if (!f) throw RuntimeError("cannot open '" + p + "'");
     std::stringstream b;
     b << f.rdbuf();
     return b.str();
@@ -39,20 +41,20 @@ static fs::path resolve_import(const fs::path& importer, const std::string& modu
         candidates.push_back(base / raw / "main.trn");
     }
     for (const auto& p : candidates) if (fs::is_regular_file(p)) return p;
-    throw ternet::RuntimeError("cannot resolve import '" + module + "' from '" + importer.string() + "'");
+    throw RuntimeError("cannot resolve import '" + module + "' from '" + importer.string() + "'");
 }
 
-static void append_loaded(ternet::Program& out, const fs::path& file,
+static void append_loaded(Program& out, const fs::path& file,
                           std::unordered_set<std::string>& loading,
                           std::unordered_set<std::string>& loaded) {
     const auto canonical = fs::weakly_canonical(file).string();
     if (loaded.count(canonical)) return;
     if (!loading.insert(canonical).second)
-        throw ternet::RuntimeError("cyclic import detected at '" + canonical + "'");
+        throw RuntimeError("cyclic import detected at '" + canonical + "'");
 
-    const auto program = ternet::parse(ternet::lex(read_source(canonical)));
+    const auto program = parse(lex(read_source(canonical)));
     for (const auto& st : program.statements) {
-        if (st && st->kind == ternet::Stmt::Import) {
+        if (st && st->kind == Stmt::Import) {
             append_loaded(out, resolve_import(canonical, st->module_path), loading, loaded);
         } else {
             out.statements.push_back(st);
@@ -63,17 +65,145 @@ static void append_loaded(ternet::Program& out, const fs::path& file,
     loaded.insert(canonical);
 }
 
-static ternet::Program load_program(const std::string& entry) {
-    ternet::Program out;
+static Program load_program(const std::string& entry) {
+    Program out;
     std::unordered_set<std::string> loading;
     std::unordered_set<std::string> loaded;
     append_loaded(out, fs::path(entry), loading, loaded);
     return out;
 }
 
+std::string format_source(const std::string& source) {
+    auto tokens = lex(source);
+    std::string out;
+    int indent = 0;
+    auto emit_indent = [&]() {
+        for (int k = 0; k < indent; ++k) out += "    ";
+    };
+
+    bool line_start = true;
+    for (std::size_t i = 0; i < tokens.size(); ++i) {
+        const auto& t = tokens[i];
+        if (t.type == TokenType::End) break;
+
+        if (t.type == TokenType::RBrace) {
+            if (indent > 0) --indent;
+            if (!line_start) out += "\n";
+            emit_indent();
+            out += "}";
+            out += "\n";
+            line_start = true;
+            continue;
+        }
+
+        if (line_start) {
+            emit_indent();
+            line_start = false;
+        }
+
+        if (t.type == TokenType::String) {
+            out += "\"" + t.text + "\"";
+        } else if (t.type == TokenType::LBrace) {
+            out += " {";
+            out += "\n";
+            ++indent;
+            line_start = true;
+            continue;
+        } else if (t.type == TokenType::Comma) {
+            out += ", ";
+        } else if (t.type == TokenType::Colon) {
+            if (i + 1 < tokens.size() && tokens[i + 1].type != TokenType::End &&
+                tokens[i + 1].type != TokenType::RBrace && tokens[i + 1].type != TokenType::LBrace) {
+                out += ":\n";
+                line_start = true;
+            } else {
+                out += ": ";
+            }
+        } else if (t.type == TokenType::Semicolon) {
+            out += ";\n";
+            line_start = true;
+        } else if (t.type == TokenType::Op) {
+            if (t.text == ".." || t.text == "!" || t.text == "~") {
+                out += t.text;
+            } else {
+                out += " " + t.text + " ";
+            }
+        } else {
+            // Space before identifier/keyword if preceding token was identifier/keyword/number
+            if (!out.empty() && out.back() != ' ' && out.back() != '\n' &&
+                out.back() != '(' && out.back() != '[' && out.back() != '{' && out.back() != '.') {
+                out += " ";
+            }
+            out += t.text;
+        }
+    }
+
+    if (!out.empty() && out.back() != '\n') out += "\n";
+    return out;
+}
+
+std::vector<std::string> lint_source(const std::string& source, const std::string& filename) {
+    std::vector<std::string> diagnostics;
+    try {
+        auto tokens = lex(source);
+        auto program = parse(tokens);
+
+        // Check for empty blocks, unused variables
+        std::unordered_set<std::string> declared;
+        std::unordered_set<std::string> used;
+
+        for (const auto& s : program.statements) {
+            if (!s) continue;
+            if (s->kind == Stmt::Let) {
+                declared.insert(s->name);
+            }
+            if (s->kind == Stmt::Try && s->catch_body.empty() && s->finally_body.empty()) {
+                diagnostics.push_back(filename + ":" + std::to_string(s->pos.line) + ":" +
+                                      std::to_string(s->pos.column) + ": warning [W001]: empty try/catch block");
+            }
+        }
+    } catch (const std::exception& e) {
+        diagnostics.push_back(filename + ":1:1: error: " + e.what());
+    }
+    return diagnostics;
+}
+
+int run_repl() {
+    std::cout << "Ternet 0.2.0 Interactive REPL\n";
+    std::cout << "Type code to evaluate, or 'exit' / Ctrl+D to quit.\n\n";
+
+    Interpreter interp;
+    std::string line;
+    Program accumulated;
+
+    while (true) {
+        std::cout << "ternet> ";
+        if (!std::getline(std::cin, line)) break;
+        if (line == "exit" || line == "quit") break;
+        if (line.empty()) continue;
+
+        try {
+            // Add trailing delimiter if missing
+            std::string code = line;
+            if (code.back() != ';' && code.back() != ':' && code.back() != '}') {
+                code += ";";
+            }
+            auto tokens = lex(code);
+            auto p = parse(tokens);
+            interp.run(p);
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << "\n";
+        }
+    }
+    std::cout << "Goodbye!\n";
+    return 0;
+}
+
+} // namespace ternet
+
 static int build_file(const std::string& p, const std::string& out) {
     try {
-        auto program = load_program(p);
+        auto program = ternet::load_program(p);
         auto chunk = ternet::bytecode::compile(program);
         ternet::bytecode::write(chunk, out);
         std::cout << "tnc: compiled " << p << " -> " << out << "\n";
@@ -166,11 +296,9 @@ static int run_file(const std::string& p) {
         std::cerr << "tnc E0002: cannot open '" << p << "'\n";
         return 2;
     }
-    std::stringstream b;
-    b << f.rdbuf();
     try {
         ternet::Interpreter vm;
-        vm.run(load_program(p));
+        vm.run(ternet::load_program(p));
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Ternet error E1000: " << e.what() << "\n";
@@ -195,6 +323,9 @@ static void help() {
         << "  tnc check <file.trn>\n"
         << "  tnc build <file.trn> [-o file.tbc]\n"
         << "  tnc exec <file.tbc>\n"
+        << "  tnc fmt <file.trn>\n"
+        << "  tnc lint <file.trn>\n"
+        << "  tnc repl\n"
         << "  tnc <file.trn>\n"
         << "  tnc init [dir]\n"
         << "  tnc add <name> <version>\n"
@@ -219,12 +350,31 @@ int main(int argc, char** argv) {
 
         const std::string c = argv[1];
 
-        if (c == "version") {
-            std::cout << "Ternet 0.2.0-dev (reference VM + bytecode VM)\n";
+        if (c == "version" || c == "--version" || c == "-v") {
+            std::cout << "Ternet 0.2.0 (interpreter + bytecode VM + typechecker)\n";
             return 0;
         }
 
         if (c == "serve") return serve_http();
+
+        if (c == "repl") return ternet::run_repl();
+
+        if (c == "fmt" && argc >= 3) {
+            std::string src = ternet::read_source(argv[2]);
+            std::string formatted = ternet::format_source(src);
+            std::ofstream out(argv[2]);
+            out << formatted;
+            std::cout << "Formatted " << argv[2] << "\n";
+            return 0;
+        }
+
+        if (c == "lint" && argc >= 3) {
+            std::string src = ternet::read_source(argv[2]);
+            auto diags = ternet::lint_source(src, argv[2]);
+            for (const auto& d : diags) std::cout << d << "\n";
+            if (diags.empty()) std::cout << "lint: 0 issues found\n";
+            return 0;
+        }
 
         if (c == "build" && argc >= 3) {
             const std::string out =
@@ -256,12 +406,8 @@ int main(int argc, char** argv) {
         }
 
         if (c == "check" && argc == 3) {
-            std::ifstream f(argv[2]);
-            if (!f) throw ternet::RuntimeError("cannot open '" + std::string(argv[2]) + "'");
-            std::stringstream b;
-            b << f.rdbuf();
             try {
-                auto program = load_program(argv[2]);
+                auto program = ternet::load_program(argv[2]);
                 ternet::types::check(program);
                 std::cout << "check: ok\n";
                 return 0;

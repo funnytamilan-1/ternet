@@ -1,0 +1,23 @@
+fn identity(value) {
+    return value:
+}
+
+let num = identity(42):
+let text = identity("Ternet"):
+tnprint(num):
+tnprint(text):
+
+class Box {
+    let value
+
+    fn init(val) {
+        this.value = val:
+    }
+
+    fn get() {
+        return this.value:
+    }
+}
+
+let box = Box(100):
+tnprint(box.get()):

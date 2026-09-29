@@ -1,0 +1,6 @@
+{
+  "name": "Ternet Language Playground & Workbench",
+  "description": "Interactive development environment, compiler, interpreter, bytecode VM explorer, and documentation for the Ternet programming language.",
+  "permissions": [],
+  "capabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

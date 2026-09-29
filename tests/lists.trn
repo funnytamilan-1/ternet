@@ -1,0 +1,7 @@
+let numbers: List<int> = [1, 2, 3]:
+numbers.append(4):
+let first = numbers[0]:
+tnprint(first):
+let popped = numbers.pop():
+tnprint(popped):
+tnprint(numbers.len()):

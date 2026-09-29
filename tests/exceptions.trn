@@ -1,0 +1,7 @@
+try {
+    throw "custom error":
+} catch (e) {
+    tnprint("caught: " + e):
+} finally {
+    tnprint("finally executed"):
+}

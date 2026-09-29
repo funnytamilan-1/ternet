@@ -1,0 +1,12 @@
+trait Drawable {
+    fn draw()
+}
+
+class Player implements Drawable {
+    fn draw() {
+        tnprint("Player"):
+    }
+}
+
+let player = Player():
+player.draw():
