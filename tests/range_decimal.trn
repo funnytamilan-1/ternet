@@ -1,0 +1,6 @@
+for i in 1..3 {
+    tnprint(i):
+}
+
+let value = 12.5:
+tnprint(value):
