@@ -1,0 +1,9 @@
+// Ternet Option foundation.
+// Option is represented by tagged constructor functions in the compiler/runtime.
+fn some(value) {
+    return value:
+}
+
+fn none() {
+    return null:
+}
