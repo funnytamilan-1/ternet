@@ -23,6 +23,15 @@ else()
 endif()
 
 enable_testing()
+
+add_executable(ternet_lexer_parser_v01
+    tests/lexer_parser_v01.cpp
+    Parser/lexer.cpp
+    Parser/parser.cpp
+)
+target_include_directories(ternet_lexer_parser_v01 PRIVATE Include)
+add_test(NAME ternet_lexer_parser_v01 COMMAND ternet_lexer_parser_v01)
+
 add_test(NAME ternet_core COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/core.trn)
 add_test(NAME ternet_loop COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/loop.trn)
 add_test(NAME ternet_errors COMMAND tnc run ${CMAKE_SOURCE_DIR}/tests/errors.trn)
